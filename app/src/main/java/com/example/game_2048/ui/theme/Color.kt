@@ -33,6 +33,10 @@ val BoardFrostDark = Color(0x08FFFFFF)          // white at 3%
 // ─── Score Cards ──────────────────────────────────────────────────
 val ScoreCardLight = Color(0xFFC2B5A7)
 val ScoreCardDark = Color(0xFF2A2A36)
+val ScoreCardGlassLight = Color(0xDDC2B5A7)    // taupe at 87%
+val ScoreCardGlassDark = Color(0xCC2A2A36)     // charcoal at 80%
+val ScoreCardBorderLight = Color(0x14FFFFFF)    // white at 8%
+val ScoreCardBorderDark = Color(0x0FFFFFFF)     // white at 6%
 
 // ─── Buttons ──────────────────────────────────────────────────────
 val RestartButtonLight = Color(0xFF8F7A66)

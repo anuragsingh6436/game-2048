@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -22,13 +23,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.game_2048.ui.theme.LocalGameColors
 
-private val CardShape = RoundedCornerShape(10.dp)
+private val CardShape = RoundedCornerShape(12.dp)
 
 @Composable
 fun ScoreCard(
@@ -38,7 +42,6 @@ fun ScoreCard(
 ) {
     val gameColors = LocalGameColors.current
 
-    // Pulse on score change
     val pulseScale = remember { Animatable(1f) }
 
     LaunchedEffect(score) {
@@ -54,6 +57,16 @@ fun ScoreCard(
         }
     }
 
+    // Frost highlight for glass depth
+    val frostBrush = Brush.verticalGradient(
+        colors = listOf(
+            Color.White.copy(alpha = if (gameColors.isDark) 0.04f else 0.10f),
+            Color.Transparent
+        ),
+        startY = 0f,
+        endY = 40f
+    )
+
     Column(
         modifier = modifier
             .graphicsLayer {
@@ -61,8 +74,26 @@ fun ScoreCard(
                 scaleY = pulseScale.value
             }
             .widthIn(min = 76.dp)
+            .shadow(
+                elevation = 2.dp,
+                shape = CardShape,
+                ambientColor = if (gameColors.isDark)
+                    Color.Black.copy(alpha = 0.2f)
+                else
+                    gameColors.scoreCard.copy(alpha = 0.15f),
+                spotColor = if (gameColors.isDark)
+                    Color.Black.copy(alpha = 0.15f)
+                else
+                    gameColors.scoreCard.copy(alpha = 0.10f)
+            )
             .clip(CardShape)
-            .background(gameColors.scoreCard)
+            .background(gameColors.scoreCardGlass)
+            .background(frostBrush)
+            .border(
+                width = 0.5.dp,
+                color = gameColors.scoreCardBorder,
+                shape = CardShape
+            )
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

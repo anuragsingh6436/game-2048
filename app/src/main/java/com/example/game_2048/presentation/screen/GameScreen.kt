@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -107,7 +108,7 @@ fun GameScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Header(
                 score = gameState.score,
@@ -193,7 +194,7 @@ fun GameScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Text(
                 text = stringResource(R.string.game_hint),
@@ -213,7 +214,7 @@ fun GameScreen(
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.2.sp
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -352,7 +353,7 @@ private fun Header(
         }
     }
 
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(16.dp))
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -450,13 +451,21 @@ private fun PressableButton(
         PressableButtonPadding.Icon -> Modifier.padding(10.dp)
     }
 
+    val buttonShape = RoundedCornerShape(10.dp)
+
     Box(
         modifier = Modifier
             .graphicsLayer {
                 scaleX = pressScale.value
                 scaleY = pressScale.value
             }
-            .clip(RoundedCornerShape(8.dp))
+            .shadow(
+                elevation = 2.dp,
+                shape = buttonShape,
+                ambientColor = backgroundColor.copy(alpha = 0.2f),
+                spotColor = backgroundColor.copy(alpha = 0.15f)
+            )
+            .clip(buttonShape)
             .background(
                 if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.35f)
             )
