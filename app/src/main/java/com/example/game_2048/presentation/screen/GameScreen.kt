@@ -44,9 +44,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.game_2048.R
 import com.example.game_2048.domain.model.Direction
 import com.example.game_2048.presentation.GameViewModel
 import com.example.game_2048.presentation.components.GameBoard
@@ -193,7 +195,7 @@ fun GameScreen(
         Spacer(modifier = Modifier.height(28.dp))
 
         Text(
-            text = "Join the numbers and get to 2048",
+            text = stringResource(R.string.game_hint),
             color = gameColors.textSecondary,
             fontSize = 13.sp,
             fontWeight = FontWeight.Normal,
@@ -204,7 +206,7 @@ fun GameScreen(
 
         if (gameState.moveCount > 0) {
             Text(
-                text = "${gameState.moveCount} moves",
+                text = stringResource(R.string.moves_count, gameState.moveCount),
                 color = gameColors.textSecondary.copy(alpha = 0.6f),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
@@ -279,7 +281,7 @@ private fun Header(
         verticalAlignment = Alignment.Bottom
     ) {
         Text(
-            text = "2048",
+            text = stringResource(R.string.game_title),
             color = gameColors.textPrimary,
             fontSize = 52.sp,
             fontWeight = FontWeight.Bold,
@@ -289,14 +291,14 @@ private fun Header(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box {
-                ScoreCard(label = "SCORE", score = score)
+                ScoreCard(label = stringResource(R.string.label_score), score = score)
                 ScorePopup(
                     scoreGained = scoreGained,
                     moveCount = moveCount,
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
             }
-            ScoreCard(label = "BEST", score = bestScore)
+            ScoreCard(label = stringResource(R.string.label_best), score = bestScore)
         }
     }
 
@@ -308,7 +310,7 @@ private fun Header(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Swipe to play",
+            text = stringResource(R.string.swipe_to_play),
             color = gameColors.textSecondary,
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal
@@ -324,7 +326,7 @@ private fun Header(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Undo,
-                        contentDescription = "Undo",
+                        contentDescription = stringResource(R.string.cd_undo),
                         tint = Color.White.copy(alpha = if (canUndo) 1f else 0.5f),
                         modifier = Modifier.size(16.dp)
                     )
@@ -346,7 +348,7 @@ private fun Header(
                         modifier = Modifier.size(14.dp)
                     )
                     Text(
-                        text = "New Game",
+                        text = stringResource(R.string.new_game),
                         color = Color.White,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold

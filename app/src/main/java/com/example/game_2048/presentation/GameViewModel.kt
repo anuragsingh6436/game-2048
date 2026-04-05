@@ -3,10 +3,12 @@ package com.example.game_2048.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.game_2048.config.FeatureFlags
-import com.example.game_2048.data.repository.ScoreRepository
-import com.example.game_2048.domain.engine.GameEngine
 import com.example.game_2048.domain.model.Direction
 import com.example.game_2048.domain.model.GameState
+import com.example.game_2048.domain.usecase.GetBestScoreUseCase
+import com.example.game_2048.domain.usecase.MoveTilesUseCase
+import com.example.game_2048.domain.usecase.SaveBestScoreUseCase
+import com.example.game_2048.domain.usecase.StartNewGameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,12 +19,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val gameEngine: GameEngine,
-    private val scoreRepository: ScoreRepository,
+    private val startNewGameUseCase: StartNewGameUseCase,
+    private val moveTilesUseCase: MoveTilesUseCase,
+    private val getBestScoreUseCase: GetBestScoreUseCase,
+    private val saveBestScoreUseCase: SaveBestScoreUseCase,
     val featureFlags: FeatureFlags
 ) : ViewModel() {
 
-    private val _gameState = MutableStateFlow(gameEngine.createInitialState())
+    private val _gameState = MutableStateFlow(startNewGameUseCase())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     private var previousState: GameState? = null
@@ -34,11 +38,8 @@ class GameViewModel @Inject constructor(
 
     fun startNewGame() {
         loadBestScoreJob?.cancel()
-
-        val initialState = gameEngine.createInitialState()
-        _gameState.value = initialState
+        _gameState.value = startNewGameUseCase()
         previousState = null
-
         loadBestScore()
     }
 
@@ -47,16 +48,16 @@ class GameViewModel @Inject constructor(
         if (currentState.isGameOver) return
 
         previousState = currentState
-        val newState = gameEngine.move(currentState, direction)
+        val newState = moveTilesUseCase(currentState, direction)
 
         if (newState !== currentState) {
             _gameState.value = newState
             if (newState.score > currentState.bestScore) {
                 viewModelScope.launch {
                     try {
-                        scoreRepository.saveBestScore(newState.score)
+                        saveBestScoreUseCase(newState.score)
                     } catch (_: Exception) {
-                        // DataStore write failed — best score not persisted this time
+                        // Persist failed — best score not saved this time
                     }
                 }
             }
@@ -83,13 +84,13 @@ class GameViewModel @Inject constructor(
     private fun loadBestScore() {
         loadBestScoreJob = viewModelScope.launch {
             try {
-                val bestScore = scoreRepository.getBestScore()
+                val bestScore = getBestScoreUseCase()
                 val current = _gameState.value
                 if (bestScore > current.bestScore) {
                     _gameState.value = current.copy(bestScore = bestScore)
                 }
             } catch (_: Exception) {
-                // DataStore read failed — keep bestScore at 0
+                // DB read failed — keep bestScore at 0
             }
         }
     }

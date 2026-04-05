@@ -27,9 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.game_2048.R
 import com.example.game_2048.ui.theme.AccentGold
 import com.example.game_2048.ui.theme.AccentWin
 import com.example.game_2048.ui.theme.LocalGameColors
@@ -74,7 +76,8 @@ fun GameOverOverlay(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = if (showWinOverlay) "You Win!" else "Game Over",
+                    text = if (showWinOverlay) stringResource(R.string.you_win)
+                           else stringResource(R.string.game_over),
                     color = if (showWinOverlay) AccentWin else gameColors.textPrimary,
                     fontSize = if (showWinOverlay) 44.sp else 38.sp,
                     fontWeight = FontWeight.Bold,
@@ -84,7 +87,7 @@ fun GameOverOverlay(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = "Score: $score",
+                    text = stringResource(R.string.score_label, score),
                     color = gameColors.textSecondary,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Medium
@@ -93,7 +96,6 @@ fun GameOverOverlay(
                 Spacer(modifier = Modifier.height(28.dp))
 
                 if (showWinOverlay) {
-                    // Win state: two buttons
                     Row(horizontalArrangement = Arrangement.Center) {
                         Box(
                             modifier = Modifier
@@ -103,7 +105,7 @@ fun GameOverOverlay(
                                 .padding(horizontal = 28.dp, vertical = 14.dp)
                         ) {
                             Text(
-                                text = "Keep Playing",
+                                text = stringResource(R.string.keep_playing),
                                 color = Color(0xFF1A1A1A),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -121,7 +123,7 @@ fun GameOverOverlay(
                                 .padding(horizontal = 28.dp, vertical = 14.dp)
                         ) {
                             Text(
-                                text = "Restart",
+                                text = stringResource(R.string.restart),
                                 color = Color.White,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -130,7 +132,6 @@ fun GameOverOverlay(
                         }
                     }
                 } else {
-                    // Game over: single restart button
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(50))
@@ -139,7 +140,7 @@ fun GameOverOverlay(
                             .padding(horizontal = 36.dp, vertical = 14.dp)
                     ) {
                         Text(
-                            text = "Try Again",
+                            text = stringResource(R.string.try_again),
                             color = Color.White,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,

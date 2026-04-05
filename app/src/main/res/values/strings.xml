@@ -1,3 +1,26 @@
 <resources>
-    <string name="app_name">game_2048</string>
+    <string name="app_name">2048</string>
+
+    <!-- Header -->
+    <string name="game_title">2048</string>
+    <string name="label_score">SCORE</string>
+    <string name="label_best">BEST</string>
+    <string name="swipe_to_play">Swipe to play</string>
+    <string name="new_game">New Game</string>
+
+    <!-- Footer -->
+    <string name="game_hint">Join the numbers and get to 2048</string>
+    <string name="moves_count">%d moves</string>
+
+    <!-- Overlay -->
+    <string name="you_win">You Win!</string>
+    <string name="game_over">Game Over</string>
+    <string name="score_label">Score: %d</string>
+    <string name="keep_playing">Keep Playing</string>
+    <string name="restart">Restart</string>
+    <string name="try_again">Try Again</string>
+
+    <!-- Accessibility -->
+    <string name="cd_undo">Undo</string>
+    <string name="cd_new_game">New Game</string>
 </resources>

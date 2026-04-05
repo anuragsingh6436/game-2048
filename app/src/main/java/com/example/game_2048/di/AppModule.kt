@@ -1,10 +1,15 @@
 package com.example.game_2048.di
 
-import com.example.game_2048.config.FeatureFlags
-import com.example.game_2048.domain.engine.GameEngine
+import android.content.Context
+import androidx.room.Room
+import com.example.game_2048.data.local.GameDatabase
+import com.example.game_2048.data.local.ScoreDao
+import com.example.game_2048.data.repository.GameRepositoryImpl
+import com.example.game_2048.domain.repository.GameRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -14,9 +19,22 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGameEngine(): GameEngine = GameEngine()
+    fun provideDatabase(@ApplicationContext context: Context): GameDatabase {
+        return Room.databaseBuilder(
+            context,
+            GameDatabase::class.java,
+            "game_2048_db"
+        ).build()
+    }
+
+    @Provides
+    fun provideScoreDao(database: GameDatabase): ScoreDao {
+        return database.scoreDao()
+    }
 
     @Provides
     @Singleton
-    fun provideFeatureFlags(): FeatureFlags = FeatureFlags()
+    fun provideGameRepository(scoreDao: ScoreDao): GameRepository {
+        return GameRepositoryImpl(scoreDao)
+    }
 }

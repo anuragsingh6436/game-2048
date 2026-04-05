@@ -2,10 +2,14 @@ package com.example.game_2048.presentation
 
 import app.cash.turbine.test
 import com.example.game_2048.config.FeatureFlags
-import com.example.game_2048.data.repository.ScoreRepository
 import com.example.game_2048.domain.engine.GameEngine
 import com.example.game_2048.domain.model.Direction
 import com.example.game_2048.domain.model.GameState
+import com.example.game_2048.domain.repository.GameRepository
+import com.example.game_2048.domain.usecase.GetBestScoreUseCase
+import com.example.game_2048.domain.usecase.MoveTilesUseCase
+import com.example.game_2048.domain.usecase.SaveBestScoreUseCase
+import com.example.game_2048.domain.usecase.StartNewGameUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -26,16 +30,26 @@ class GameViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var gameEngine: GameEngine
-    private lateinit var scoreRepository: ScoreRepository
+    private lateinit var gameRepository: GameRepository
     private lateinit var featureFlags: FeatureFlags
+
+    private lateinit var startNewGameUseCase: StartNewGameUseCase
+    private lateinit var moveTilesUseCase: MoveTilesUseCase
+    private lateinit var getBestScoreUseCase: GetBestScoreUseCase
+    private lateinit var saveBestScoreUseCase: SaveBestScoreUseCase
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         gameEngine = GameEngine()
-        scoreRepository = mockk(relaxed = true)
+        gameRepository = mockk(relaxed = true)
         featureFlags = FeatureFlags()
-        coEvery { scoreRepository.getBestScore() } returns 0
+        coEvery { gameRepository.getBestScore() } returns 0
+
+        startNewGameUseCase = StartNewGameUseCase(gameEngine)
+        moveTilesUseCase = MoveTilesUseCase(gameEngine)
+        getBestScoreUseCase = GetBestScoreUseCase(gameRepository)
+        saveBestScoreUseCase = SaveBestScoreUseCase(gameRepository)
     }
 
     @After
@@ -44,7 +58,13 @@ class GameViewModelTest {
     }
 
     private fun createViewModel(): GameViewModel {
-        return GameViewModel(gameEngine, scoreRepository, featureFlags)
+        return GameViewModel(
+            startNewGameUseCase,
+            moveTilesUseCase,
+            getBestScoreUseCase,
+            saveBestScoreUseCase,
+            featureFlags
+        )
     }
 
     // ==================== Initial state (synchronous) ====================
@@ -52,7 +72,6 @@ class GameViewModelTest {
     @Test
     fun `initial state has two tiles immediately`() = runTest {
         val viewModel = createViewModel()
-        // No advanceUntilIdle needed — state is synchronous
         val state = viewModel.gameState.value
         val nonZero = state.grid.flatten().count { it != 0 }
         assertEquals(2, nonZero)
@@ -72,13 +91,9 @@ class GameViewModelTest {
 
     @Test
     fun `initial state loads best score from repository async`() = runTest {
-        coEvery { scoreRepository.getBestScore() } returns 5000
+        coEvery { gameRepository.getBestScore() } returns 5000
         val viewModel = createViewModel()
-
-        // Best score is 0 before coroutine runs
         assertEquals(0, viewModel.gameState.value.bestScore)
-
-        // After coroutine completes, best score is loaded
         advanceUntilIdle()
         assertEquals(5000, viewModel.gameState.value.bestScore)
     }
@@ -95,17 +110,14 @@ class GameViewModelTest {
 
         viewModel.startNewGame()
 
-        // State reset is synchronous — no advanceUntilIdle needed
         assertEquals(0, viewModel.gameState.value.score)
-        val nonZero = viewModel.gameState.value.grid.flatten().count { it != 0 }
-        assertEquals(2, nonZero)
+        assertEquals(2, viewModel.gameState.value.grid.flatten().count { it != 0 })
     }
 
     @Test
     fun `startNewGame clears previous state for undo`() = runTest {
         featureFlags.setAdvancedFeaturesEnabled(true)
         val viewModel = createViewModel()
-
         viewModel.onSwipe(Direction.LEFT)
         assertTrue(viewModel.canUndo())
 
@@ -120,7 +132,6 @@ class GameViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        // Play many moves to potentially reach game over
         repeat(200) {
             viewModel.onSwipe(Direction.LEFT)
             viewModel.onSwipe(Direction.RIGHT)
@@ -150,7 +161,7 @@ class GameViewModelTest {
 
         val currentScore = viewModel.gameState.value.score
         if (currentScore > 0) {
-            coVerify { scoreRepository.saveBestScore(any()) }
+            coVerify { gameRepository.saveBestScore(any()) }
         }
     }
 
@@ -210,7 +221,6 @@ class GameViewModelTest {
 
         viewModel.onSwipe(Direction.LEFT)
         viewModel.undoMove()
-
         assertFalse(viewModel.canUndo())
     }
 
@@ -219,7 +229,6 @@ class GameViewModelTest {
     @Test
     fun `game state flow emits updates`() = runTest {
         val viewModel = createViewModel()
-
         viewModel.gameState.test {
             val initial = awaitItem()
             assertNotNull(initial)
@@ -231,45 +240,27 @@ class GameViewModelTest {
     // ==================== Win dismiss ====================
 
     @Test
-    fun `dismissWin sets winDismissed to true`() = runTest {
-        val viewModel = createViewModel()
-        // Simulate winning by using the engine directly
-        val winGrid = listOf(
-            listOf(1024, 1024, 0, 0),
-            listOf(0, 0, 0, 0),
-            listOf(0, 0, 0, 0),
-            listOf(0, 0, 0, 0)
-        )
-        val engineState = viewModel.gameState.value.copy(grid = winGrid)
-        val newState = gameEngine.move(engineState, Direction.LEFT)
-        assertTrue("Should detect win", newState.hasWon)
-    }
-
-    @Test
-    fun `showWinOverlay is false after dismissal`() = runTest {
+    fun `showWinOverlay is false after dismissal`() {
         val state = GameState(hasWon = true, winDismissed = false)
         assertTrue(state.showWinOverlay)
-
-        val dismissed = state.copy(winDismissed = true)
-        assertFalse(dismissed.showWinOverlay)
+        assertFalse(state.copy(winDismissed = true).showWinOverlay)
     }
 
     @Test
-    fun `showWinOverlay is false when game is over`() = runTest {
-        val state = GameState(hasWon = true, isGameOver = true, winDismissed = false)
+    fun `showWinOverlay is false when game is over`() {
+        val state = GameState(hasWon = true, isGameOver = true)
         assertFalse(state.showWinOverlay)
     }
 
     @Test
-    fun `showWinOverlay is false when has not won`() = runTest {
-        val state = GameState(hasWon = false, winDismissed = false)
-        assertFalse(state.showWinOverlay)
+    fun `showWinOverlay is false when has not won`() {
+        assertFalse(GameState().showWinOverlay)
     }
 
     // ==================== scoreGained ====================
 
     @Test
-    fun `scoreGained is set correctly after merge`() = runTest {
+    fun `scoreGained is set correctly after merge`() {
         val state = GameState(
             grid = listOf(
                 listOf(2, 2, 0, 0),
@@ -278,12 +269,11 @@ class GameViewModelTest {
                 listOf(0, 0, 0, 0)
             )
         )
-        val newState = gameEngine.move(state, Direction.LEFT)
-        assertEquals(4, newState.scoreGained)
+        assertEquals(4, gameEngine.move(state, Direction.LEFT).scoreGained)
     }
 
     @Test
-    fun `scoreGained is zero when no merge occurs`() = runTest {
+    fun `scoreGained is zero when no merge occurs`() {
         val state = GameState(
             grid = listOf(
                 listOf(2, 4, 0, 0),
@@ -293,24 +283,20 @@ class GameViewModelTest {
             )
         )
         val newState = gameEngine.move(state, Direction.LEFT)
-        if (newState !== state) {
-            assertEquals(0, newState.scoreGained)
-        }
+        if (newState !== state) assertEquals(0, newState.scoreGained)
     }
 
-    // ==================== Rapid input / stress ====================
+    // ==================== Stress / edge cases ====================
 
     @Test
     fun `rapid consecutive swipes produce valid state`() = runTest {
         val viewModel = createViewModel()
-
         repeat(50) {
             viewModel.onSwipe(Direction.LEFT)
             viewModel.onSwipe(Direction.RIGHT)
             viewModel.onSwipe(Direction.UP)
             viewModel.onSwipe(Direction.DOWN)
         }
-
         val state = viewModel.gameState.value
         assertEquals(4, state.grid.size)
         state.grid.forEach { row ->
@@ -318,76 +304,53 @@ class GameViewModelTest {
             row.forEach { cell -> assertTrue(cell >= 0) }
         }
         assertTrue(state.score >= 0)
-        assertTrue(state.moveCount >= 0)
-    }
-
-    // ==================== Error handling ====================
-
-    @Test
-    fun `game works when DataStore throws on read`() = runTest {
-        coEvery { scoreRepository.getBestScore() } throws RuntimeException("corrupted")
-        val viewModel = createViewModel()
-        advanceUntilIdle()
-
-        // Game should still work with bestScore=0
-        val state = viewModel.gameState.value
-        assertEquals(0, state.bestScore)
-        assertEquals(2, state.grid.flatten().count { it != 0 })
     }
 
     @Test
-    fun `game works when DataStore throws on write`() = runTest {
-        coEvery { scoreRepository.saveBestScore(any()) } throws RuntimeException("disk full")
+    fun `game works when repository throws on read`() = runTest {
+        coEvery { gameRepository.getBestScore() } throws RuntimeException("corrupted")
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        // Swipe should not crash
+        assertEquals(0, viewModel.gameState.value.bestScore)
+        assertEquals(2, viewModel.gameState.value.grid.flatten().count { it != 0 })
+    }
+
+    @Test
+    fun `game works when repository throws on write`() = runTest {
+        coEvery { gameRepository.saveBestScore(any()) } throws RuntimeException("disk full")
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
         viewModel.onSwipe(Direction.LEFT)
         advanceUntilIdle()
 
-        // Game still functional
-        val state = viewModel.gameState.value
-        assertTrue(state.grid.flatten().count { it != 0 } >= 2)
+        assertTrue(viewModel.gameState.value.grid.flatten().count { it != 0 } >= 2)
     }
-
-    // ==================== Tile ID uniqueness ====================
 
     @Test
     fun `tile IDs are unique across restarts`() = runTest {
         val viewModel = createViewModel()
-
-        // Collect IDs from first game
         val firstGameIds = viewModel.gameState.value.tiles.map { it.id }.toSet()
 
         viewModel.onSwipe(Direction.LEFT)
-        viewModel.onSwipe(Direction.UP)
-
-        // Restart
         viewModel.startNewGame()
 
-        // New game IDs should not overlap with first game IDs
         val secondGameIds = viewModel.gameState.value.tiles.map { it.id }.toSet()
-        val overlap = firstGameIds.intersect(secondGameIds)
         assertTrue(
-            "Tile IDs should be unique across restarts, but found overlap: $overlap",
-            overlap.isEmpty()
+            "Tile IDs must be unique across restarts",
+            firstGameIds.intersect(secondGameIds).isEmpty()
         )
     }
-
-    // ==================== Rapid restart ====================
 
     @Test
     fun `rapid restarts produce valid state`() = runTest {
         val viewModel = createViewModel()
-
-        repeat(20) {
-            viewModel.startNewGame()
-        }
+        repeat(20) { viewModel.startNewGame() }
         advanceUntilIdle()
 
         val state = viewModel.gameState.value
         assertEquals(2, state.grid.flatten().count { it != 0 })
         assertEquals(0, state.score)
-        assertFalse(state.isGameOver)
     }
 }

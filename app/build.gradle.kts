@@ -62,8 +62,10 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    // DataStore
-    implementation(libs.androidx.datastore.preferences)
+    // Room
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    kapt(libs.room.compiler)
 
     // Unit Tests
     testImplementation(libs.junit)

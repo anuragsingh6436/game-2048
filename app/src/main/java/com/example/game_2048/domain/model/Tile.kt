@@ -1,5 +1,8 @@
 package com.example.game_2048.domain.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class Tile(
     val id: Long,
     val value: Int,
