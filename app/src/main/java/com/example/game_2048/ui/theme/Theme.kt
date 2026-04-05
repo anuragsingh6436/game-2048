@@ -11,7 +11,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowInsetsControllerCompat
 
@@ -162,12 +161,9 @@ fun Game2048Theme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
-            @Suppress("DEPRECATION")
-            window.statusBarColor = gameColors.background.toArgb()
-            @Suppress("DEPRECATION")
-            window.navigationBarColor = gameColors.backgroundGradientEnd.toArgb()
-            val controller = WindowInsetsControllerCompat(window, view)
+            val controller = WindowInsetsControllerCompat(
+                (view.context as Activity).window, view
+            )
             controller.isAppearanceLightStatusBars = !darkTheme
             controller.isAppearanceLightNavigationBars = !darkTheme
         }

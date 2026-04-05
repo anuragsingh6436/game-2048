@@ -87,8 +87,8 @@ class GameViewModel @Inject constructor(
 
     fun canUndo(): Boolean = featureFlags.isUndoEnabled() && previousState != null
 
-    fun cycleTheme() {
-        val next = _themeMode.value.next()
+    fun toggleTheme(isCurrentlyDark: Boolean) {
+        val next = if (isCurrentlyDark) ThemeMode.LIGHT else ThemeMode.DARK
         _themeMode.value = next
         themePreferences.setThemeMode(next)
     }
