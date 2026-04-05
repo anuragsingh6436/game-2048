@@ -5,7 +5,6 @@ import android.view.SoundEffectConstants
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,7 +26,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -77,18 +75,15 @@ fun GameScreen(
     var totalDragX by remember { mutableFloatStateOf(0f) }
     var totalDragY by remember { mutableFloatStateOf(0f) }
 
-    // Board shake on invalid swipe
     val shakeOffset = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
 
-    // Haptic on game over
     LaunchedEffect(gameState.isGameOver) {
         if (gameState.isGameOver) {
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
         }
     }
 
-    // Haptic on win
     LaunchedEffect(gameState.hasWon) {
         if (gameState.hasWon) {
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
@@ -104,10 +99,8 @@ fun GameScreen(
                 )
             )
     ) {
-        // ── Layer 0: Ambient blobs + vignette ───────────────────
         AmbientBackground()
 
-        // ── Layer 1: Content ─────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -137,12 +130,11 @@ fun GameScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Board
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .graphicsLayer {
-                        translationX = shakeOffset.value
-                    }
+                    .graphicsLayer { translationX = shakeOffset.value }
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragStart = {
@@ -173,7 +165,6 @@ fun GameScreen(
                                     val moved =
                                         viewModel.gameState.value.moveCount > prevMoveCount
                                     if (moved) {
-                                        // Sound click on valid move
                                         view.playSoundEffect(SoundEffectConstants.CLICK)
                                         if (viewModel.gameState.value.score > prevScore) {
                                             view.performHapticFeedback(
@@ -185,7 +176,6 @@ fun GameScreen(
                                             )
                                         }
                                     } else {
-                                        // Board shake on invalid swipe
                                         scope.launch {
                                             shakeOffset.snapTo(12f)
                                             shakeOffset.animateTo(
@@ -219,25 +209,16 @@ fun GameScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                text = stringResource(R.string.game_hint),
-                color = gameColors.textSecondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Normal,
-                letterSpacing = 0.1.sp
-            )
-
             Spacer(modifier = Modifier.weight(1f))
 
+            // Move counter — only visible after first move
             if (gameState.moveCount > 0) {
                 Text(
                     text = stringResource(R.string.moves_count, gameState.moveCount),
-                    color = gameColors.textSecondary.copy(alpha = 0.6f),
+                    color = gameColors.textSecondary.copy(alpha = 0.5f),
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    letterSpacing = 0.2.sp
+                    fontWeight = FontWeight.Normal,
+                    letterSpacing = 0.3.sp
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -245,14 +226,7 @@ fun GameScreen(
     }
 }
 
-// ─── Background System ──────────────────────────────────────────────
-//
-// 3 layers drawn in a single Canvas pass:
-//   1. Ambient blobs — color warmth / depth
-//   2. Center focus spot — draws eye toward the board
-//   3. Edge vignette — subtle darkening at periphery
-//
-// All radial gradients, zero allocation, renders once per theme change.
+// ─── Background ─────────────────────────────────────────────────────
 
 @Composable
 private fun AmbientBackground() {
@@ -266,8 +240,6 @@ private fun AmbientBackground() {
         val h = size.height
         val short = min(w, h)
 
-        // ── 1. Ambient blobs ────────────────────────────────────
-        // Top-right: warm wheat (light) / deep plum (dark)
         val blobRadius = short * 0.6f
         drawCircle(
             brush = Brush.radialGradient(
@@ -283,7 +255,6 @@ private fun AmbientBackground() {
             center = Offset(w * 0.88f, h * 0.06f)
         )
 
-        // Bottom-left: warm sand (light) / slate blue (dark)
         val blobRadius2 = short * 0.5f
         drawCircle(
             brush = Brush.radialGradient(
@@ -299,8 +270,6 @@ private fun AmbientBackground() {
             center = Offset(w * 0.08f, h * 0.88f)
         )
 
-        // ── 2. Center focus spot ────────────────────────────────
-        // Soft glow at ~42% vertical (where the board sits)
         val focusRadius = short * 0.45f
         val focusCenter = Offset(w * 0.5f, h * 0.42f)
         drawCircle(
@@ -316,8 +285,6 @@ private fun AmbientBackground() {
             center = focusCenter
         )
 
-        // ── 3. Edge vignette ────────────────────────────────────
-        // Radial: transparent center → darkened edges
         val vignetteRadius = max(w, h) * 0.75f
         val vignetteCenter = Offset(w * 0.5f, h * 0.4f)
         drawCircle(
@@ -336,7 +303,7 @@ private fun AmbientBackground() {
     }
 }
 
-// ─── Header ──────────────────────────────────────────────────────────
+// ─── Header ─────────────────────────────────────────────────────────
 
 @Composable
 private fun Header(
@@ -351,6 +318,7 @@ private fun Header(
 ) {
     val gameColors = LocalGameColors.current
 
+    // Row 1: Title + Scores
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -380,66 +348,47 @@ private fun Header(
 
     Spacer(modifier = Modifier.height(16.dp))
 
+    // Row 2: Actions only, right-aligned
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = stringResource(R.string.swipe_to_play),
-            color = gameColors.textSecondary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal
-        )
-
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (showUndoButton) {
-                PressableButton(
-                    onClick = onUndo,
-                    enabled = canUndo,
-                    backgroundColor = gameColors.restartButton,
-                    contentPadding = PressableButtonPadding.Icon
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Undo,
-                        contentDescription = stringResource(R.string.cd_undo),
-                        tint = Color.White.copy(alpha = if (canUndo) 1f else 0.5f),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-
+        if (showUndoButton) {
             PressableButton(
-                onClick = onRestart,
-                backgroundColor = gameColors.restartButton
+                onClick = onUndo,
+                enabled = canUndo,
+                backgroundColor = gameColors.restartButton,
+                contentPadding = PressableButtonPadding.Icon
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.new_game),
-                        color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Undo,
+                    contentDescription = stringResource(R.string.cd_undo),
+                    tint = Color.White.copy(alpha = if (canUndo) 1f else 0.5f),
+                    modifier = Modifier.size(16.dp)
+                )
             }
+
+            Spacer(modifier = Modifier.padding(start = 8.dp))
+        }
+
+        PressableButton(
+            onClick = onRestart,
+            backgroundColor = gameColors.restartButton
+        ) {
+            Text(
+                text = stringResource(R.string.new_game),
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
 
-// ─── Pressable Button ────────────────────────────────────────────────
+// ─── Button ─────────────────────────────────────────────────────────
 
-private enum class PressableButtonPadding {
-    Default, Icon
-}
+private enum class PressableButtonPadding { Default, Icon }
 
 @Composable
 private fun PressableButton(
@@ -451,24 +400,17 @@ private fun PressableButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-
     val pressScale = remember { Animatable(1f) }
 
     LaunchedEffect(isPressed) {
-        if (isPressed) {
-            pressScale.animateTo(
-                0.92f,
-                spring(stiffness = Spring.StiffnessMediumLow)
+        pressScale.animateTo(
+            if (isPressed) 0.92f else 1f,
+            spring(
+                dampingRatio = if (isPressed) Spring.DampingRatioNoBouncy
+                               else Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMedium
             )
-        } else {
-            pressScale.animateTo(
-                1f,
-                spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMedium
-                )
-            )
-        }
+        )
     }
 
     val padding = when (contentPadding) {
@@ -491,9 +433,7 @@ private fun PressableButton(
                 spotColor = backgroundColor.copy(alpha = 0.15f)
             )
             .clip(buttonShape)
-            .background(
-                if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.35f)
-            )
+            .background(if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.35f))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,

@@ -59,9 +59,7 @@ fun TileView(
     }
 
     // Merge flash: brief white overlay
-    val mergeFlash = remember(tile.id) {
-        Animatable(if (tile.mergedFrom) 0f else 0f)
-    }
+    val mergeFlash = remember(tile.id) { Animatable(0f) }
 
     LaunchedEffect(tile.id) {
         if (tile.isNew) {
@@ -105,9 +103,7 @@ fun TileView(
 
     // Tile gradient: lighter top-left → saturated bottom-right
     val tileGradient = Brush.linearGradient(
-        colors = listOf(gradientStart, bgColor),
-        start = androidx.compose.ui.geometry.Offset.Zero,
-        end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+        colors = listOf(gradientStart, bgColor)
     )
 
     // Top frost highlight

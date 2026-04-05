@@ -58,8 +58,8 @@ fun ScorePopup(
         Text(
             text = stringResource(R.string.score_gained, scoreGained),
             color = popupColor,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
             letterSpacing = (-0.3).sp,
             modifier = Modifier
                 .offset(y = offsetY.value.dp)
