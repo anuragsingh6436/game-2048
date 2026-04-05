@@ -8,8 +8,11 @@ data class GameState(
     val scoreGained: Int = 0,
     val isGameOver: Boolean = false,
     val hasWon: Boolean = false,
+    val winDismissed: Boolean = false,
     val moveCount: Int = 0
 ) {
+    val showWinOverlay: Boolean get() = hasWon && !winDismissed && !isGameOver
+
     companion object {
         const val GRID_SIZE = 4
     }

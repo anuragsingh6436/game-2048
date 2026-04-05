@@ -57,6 +57,13 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    fun dismissWin() {
+        val current = _gameState.value
+        if (current.hasWon && !current.winDismissed) {
+            _gameState.value = current.copy(winDismissed = true)
+        }
+    }
+
     fun undoMove() {
         if (!featureFlags.isUndoEnabled()) return
         previousState?.let { prev ->

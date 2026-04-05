@@ -607,4 +607,177 @@ class GameEngineTest {
         val newState = engine.move(initialState, Direction.LEFT, Random(42))
         assertTrue(newState.hasWon)
     }
+
+    // ==================== TILE TRACKING TESTS ====================
+
+    @Test
+    fun `move LEFT - tiles have correct previousCol`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(0, 0, 0, 2),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0)
+            )
+        )
+        val newState = engine.move(state, Direction.LEFT, Random(42))
+        // The 2 at col 3 should move to col 0
+        val movedTile = newState.tiles.find { it.value == 2 && !it.isNew }
+        assertNotNull("Should find the moved tile", movedTile)
+        movedTile!!
+        assertEquals(0, movedTile.row)
+        assertEquals(0, movedTile.col)
+        assertEquals(3, movedTile.previousCol)
+        assertEquals(0, movedTile.previousRow)
+    }
+
+    @Test
+    fun `move RIGHT - tiles have correct previousCol`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(2, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0)
+            )
+        )
+        val newState = engine.move(state, Direction.RIGHT, Random(42))
+        val movedTile = newState.tiles.find { it.value == 2 && !it.isNew }
+        assertNotNull(movedTile)
+        movedTile!!
+        assertEquals(0, movedTile.row)
+        assertEquals(3, movedTile.col)
+        assertEquals(0, movedTile.previousCol)
+    }
+
+    @Test
+    fun `move UP - tiles have correct previousRow`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(4, 0, 0, 0)
+            )
+        )
+        val newState = engine.move(state, Direction.UP, Random(42))
+        val movedTile = newState.tiles.find { it.value == 4 && !it.isNew }
+        assertNotNull(movedTile)
+        movedTile!!
+        assertEquals(0, movedTile.row)
+        assertEquals(0, movedTile.col)
+        assertEquals(3, movedTile.previousRow)
+    }
+
+    @Test
+    fun `move DOWN - tiles have correct previousRow`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(8, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0)
+            )
+        )
+        val newState = engine.move(state, Direction.DOWN, Random(42))
+        val movedTile = newState.tiles.find { it.value == 8 && !it.isNew }
+        assertNotNull(movedTile)
+        movedTile!!
+        assertEquals(3, movedTile.row)
+        assertEquals(0, movedTile.col)
+        assertEquals(0, movedTile.previousRow)
+    }
+
+    @Test
+    fun `merged tiles are marked mergedFrom`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(2, 2, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0)
+            )
+        )
+        val newState = engine.move(state, Direction.LEFT, Random(42))
+        val mergedTile = newState.tiles.find { it.value == 4 && it.mergedFrom }
+        assertNotNull("Should have a merged tile with value 4", mergedTile)
+    }
+
+    @Test
+    fun `new random tile is marked isNew`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(2, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 4)
+            )
+        )
+        val newState = engine.move(state, Direction.LEFT, Random(42))
+        val newTile = newState.tiles.find { it.isNew }
+        assertNotNull("Should have a newly spawned tile", newTile)
+        assertTrue(newTile!!.value == 2 || newTile.value == 4)
+    }
+
+    @Test
+    fun `tiles list contains all non-zero cells`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(2, 4, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 8)
+            )
+        )
+        val newState = engine.move(state, Direction.LEFT, Random(42))
+        val gridNonZero = newState.grid.flatten().count { it != 0 }
+        assertEquals(gridNonZero, newState.tiles.size)
+    }
+
+    // ==================== SCORE GAINED TESTS ====================
+
+    @Test
+    fun `scoreGained reflects merge points`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(4, 4, 8, 8),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0)
+            )
+        )
+        val newState = engine.move(state, Direction.LEFT, Random(42))
+        assertEquals(24, newState.scoreGained) // 4+4=8, 8+8=16 → 8+16=24
+    }
+
+    @Test
+    fun `scoreGained is zero on move without merge`() {
+        val state = GameState(
+            grid = listOf(
+                listOf(0, 0, 0, 2),
+                listOf(0, 0, 0, 4),
+                listOf(0, 0, 0, 0),
+                listOf(0, 0, 0, 0)
+            )
+        )
+        val newState = engine.move(state, Direction.LEFT, Random(42))
+        assertEquals(0, newState.scoreGained)
+    }
+
+    // ==================== WIN DISMISSED STATE TESTS ====================
+
+    @Test
+    fun `showWinOverlay computed property works correctly`() {
+        val base = GameState()
+        assertFalse(base.showWinOverlay)
+
+        val won = base.copy(hasWon = true)
+        assertTrue(won.showWinOverlay)
+
+        val dismissed = won.copy(winDismissed = true)
+        assertFalse(dismissed.showWinOverlay)
+
+        val wonAndOver = won.copy(isGameOver = true)
+        assertFalse(wonAndOver.showWinOverlay)
+    }
 }

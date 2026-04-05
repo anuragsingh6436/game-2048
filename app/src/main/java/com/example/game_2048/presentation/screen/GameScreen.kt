@@ -177,11 +177,15 @@ fun GameScreen(
 
             GameOverOverlay(
                 isGameOver = gameState.isGameOver,
-                hasWon = gameState.hasWon && !gameState.isGameOver,
+                showWinOverlay = gameState.showWinOverlay,
                 score = gameState.score,
                 onRestart = {
                     view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
                     viewModel.startNewGame()
+                },
+                onKeepPlaying = {
+                    view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                    viewModel.dismissWin()
                 }
             )
         }

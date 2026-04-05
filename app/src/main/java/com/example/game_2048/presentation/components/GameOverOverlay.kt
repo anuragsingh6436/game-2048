@@ -13,10 +13,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,15 +37,16 @@ import com.example.game_2048.ui.theme.LocalGameColors
 @Composable
 fun GameOverOverlay(
     isGameOver: Boolean,
-    hasWon: Boolean,
+    showWinOverlay: Boolean,
     score: Int,
     onRestart: () -> Unit,
+    onKeepPlaying: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val gameColors = LocalGameColors.current
 
     AnimatedVisibility(
-        visible = isGameOver || hasWon,
+        visible = isGameOver || showWinOverlay,
         enter = fadeIn(animationSpec = tween(400)) +
                 scaleIn(
                     initialScale = 0.92f,
@@ -71,9 +74,9 @@ fun GameOverOverlay(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = if (hasWon) "You Win!" else "Game Over",
-                    color = if (hasWon) AccentWin else gameColors.textPrimary,
-                    fontSize = if (hasWon) 44.sp else 38.sp,
+                    text = if (showWinOverlay) "You Win!" else "Game Over",
+                    color = if (showWinOverlay) AccentWin else gameColors.textPrimary,
+                    fontSize = if (showWinOverlay) 44.sp else 38.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-1).sp
                 )
@@ -89,22 +92,60 @@ fun GameOverOverlay(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(
-                            if (hasWon) AccentGold else gameColors.restartButton
+                if (showWinOverlay) {
+                    // Win state: two buttons
+                    Row(horizontalArrangement = Arrangement.Center) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(AccentGold)
+                                .clickable(onClick = onKeepPlaying)
+                                .padding(horizontal = 28.dp, vertical = 14.dp)
+                        ) {
+                            Text(
+                                text = "Keep Playing",
+                                color = Color(0xFF1A1A1A),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.3.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(gameColors.restartButton)
+                                .clickable(onClick = onRestart)
+                                .padding(horizontal = 28.dp, vertical = 14.dp)
+                        ) {
+                            Text(
+                                text = "Restart",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.3.sp
+                            )
+                        }
+                    }
+                } else {
+                    // Game over: single restart button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(gameColors.restartButton)
+                            .clickable(onClick = onRestart)
+                            .padding(horizontal = 36.dp, vertical = 14.dp)
+                    ) {
+                        Text(
+                            text = "Try Again",
+                            color = Color.White,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 0.3.sp
                         )
-                        .clickable(onClick = onRestart)
-                        .padding(horizontal = 36.dp, vertical = 14.dp)
-                ) {
-                    Text(
-                        text = "Try Again",
-                        color = if (hasWon) Color(0xFF1A1A1A) else Color.White,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.3.sp
-                    )
+                    }
                 }
             }
         }
