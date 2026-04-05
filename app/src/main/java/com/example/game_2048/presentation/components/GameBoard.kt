@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.min
 
 private val BoardShape = RoundedCornerShape(20.dp)
-private val CellShape = RoundedCornerShape(10.dp)
+private val CellShape = RoundedCornerShape(14.dp)
 private val BOARD_PADDING = 12.dp
 private val CELL_SPACING = 8.dp
 

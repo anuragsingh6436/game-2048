@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -28,7 +29,7 @@ import com.example.game_2048.ui.theme.LocalGameColors
 import com.example.game_2048.ui.theme.TileColors
 import kotlinx.coroutines.delay
 
-private val TileShape = RoundedCornerShape(10.dp)
+private val TileShape = RoundedCornerShape(14.dp)
 
 @Composable
 fun TileView(
@@ -37,9 +38,13 @@ fun TileView(
     modifier: Modifier = Modifier
 ) {
     val gameColors = LocalGameColors.current
-    val bgColor = TileColors.getBackgroundColor(tile.value, gameColors.isDark)
-    val textColor = TileColors.getTextColor(tile.value, gameColors.isDark)
+    val isDark = gameColors.isDark
+    val bgColor = TileColors.getBackgroundColor(tile.value, isDark)
+    val gradientStart = TileColors.getGradientStart(tile.value, isDark)
+    val textColor = TileColors.getTextColor(tile.value, isDark)
     val fontSize = TileColors.getFontSize(tile.value)
+    val hasGlow = TileColors.hasGlow(tile.value)
+    val glowAlpha = TileColors.getGlowAlpha(tile.value, isDark)
 
     // Appear: scale from 0 → 1
     val appearScale = remember(tile.id) {
@@ -53,7 +58,6 @@ fun TileView(
 
     LaunchedEffect(tile.id) {
         if (tile.isNew) {
-            // Small delay so the new tile appears after other tiles finish sliding
             delay(80)
             appearScale.animateTo(
                 targetValue = 1f,
@@ -67,7 +71,6 @@ fun TileView(
 
     LaunchedEffect(tile.id) {
         if (tile.mergedFrom) {
-            // Wait for slide to finish, then pop
             delay(100)
             mergeScale.snapTo(1.2f)
             mergeScale.animateTo(
@@ -80,21 +83,30 @@ fun TileView(
         }
     }
 
+    // Value-proportional elevation
     val elevation = when {
-        tile.value >= 2048 -> 10.dp
-        tile.value >= 512 -> 6.dp
-        tile.value >= 64 -> 4.dp
-        tile.value >= 8 -> 2.dp
-        else -> 0.dp
+        tile.value >= 2048 -> 12.dp
+        tile.value >= 512 -> 8.dp
+        tile.value >= 64 -> 5.dp
+        tile.value >= 8 -> 3.dp
+        else -> 1.dp
     }
 
-    val highlightBrush = Brush.verticalGradient(
+    // Tile gradient: lighter top-left → saturated bottom-right
+    val tileGradient = Brush.linearGradient(
+        colors = listOf(gradientStart, bgColor),
+        start = androidx.compose.ui.geometry.Offset.Zero,
+        end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+    )
+
+    // Top frost highlight
+    val frostBrush = Brush.verticalGradient(
         colors = listOf(
-            Color.White.copy(alpha = if (gameColors.isDark) 0.06f else 0.15f),
+            Color.White.copy(alpha = if (isDark) 0.07f else 0.18f),
             Color.Transparent
         ),
         startY = 0f,
-        endY = 80f
+        endY = 60f
     )
 
     Box(
@@ -104,21 +116,38 @@ fun TileView(
                 val s = appearScale.value * mergeScale.value
                 scaleX = s
                 scaleY = s
+                clip = false
+            }
+            .drawBehind {
+                // Glow halo for high-value tiles (128+)
+                if (hasGlow) {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                bgColor.copy(alpha = glowAlpha),
+                                bgColor.copy(alpha = glowAlpha * 0.3f),
+                                Color.Transparent
+                            )
+                        ),
+                        radius = size.minDimension * 0.72f
+                    )
+                }
             }
             .shadow(
                 elevation = elevation,
                 shape = TileShape,
-                ambientColor = bgColor.copy(alpha = 0.25f),
-                spotColor = bgColor.copy(alpha = 0.20f)
+                ambientColor = bgColor.copy(alpha = 0.3f),
+                spotColor = bgColor.copy(alpha = 0.25f)
             )
             .clip(TileShape)
-            .background(bgColor),
+            .background(tileGradient),
         contentAlignment = Alignment.Center
     ) {
+        // Frost highlight overlay
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .background(highlightBrush)
+                .background(frostBrush)
         )
 
         Text(

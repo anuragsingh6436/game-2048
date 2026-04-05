@@ -99,6 +99,26 @@ object TileColors {
     fun getBackgroundColor(value: Int, isDark: Boolean): Color =
         if (isDark) getDarkBg(value) else getLightBg(value)
 
+    fun getGradientStart(value: Int, isDark: Boolean): Color {
+        val base = getBackgroundColor(value, isDark)
+        val lift = if (value <= 4) 0.08f else 0.15f
+        return Color(
+            red = base.red + (1f - base.red) * lift,
+            green = base.green + (1f - base.green) * lift,
+            blue = base.blue + (1f - base.blue) * lift,
+            alpha = base.alpha
+        )
+    }
+
+    fun hasGlow(value: Int): Boolean = value >= 128
+
+    fun getGlowAlpha(value: Int, isDark: Boolean): Float = when {
+        value >= 2048 -> if (isDark) 0.40f else 0.30f
+        value >= 512 -> if (isDark) 0.30f else 0.22f
+        value >= 128 -> if (isDark) 0.22f else 0.15f
+        else -> 0f
+    }
+
     fun getTextColor(value: Int, isDark: Boolean): Color = when {
         isDark && value <= 4 -> Color(0xFFB8B4BE)          // muted on low-value dark tiles
         isDark -> Color(0xFFF9F6F2)
