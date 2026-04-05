@@ -2,9 +2,11 @@ package com.example.game_2048.presentation
 
 import app.cash.turbine.test
 import com.example.game_2048.config.FeatureFlags
+import com.example.game_2048.data.local.ThemePreferences
 import com.example.game_2048.domain.engine.GameEngine
 import com.example.game_2048.domain.model.Direction
 import com.example.game_2048.domain.model.GameState
+import com.example.game_2048.domain.model.ThemeMode
 import com.example.game_2048.domain.repository.GameRepository
 import com.example.game_2048.domain.usecase.GetBestScoreUseCase
 import com.example.game_2048.domain.usecase.MoveTilesUseCase
@@ -12,6 +14,7 @@ import com.example.game_2048.domain.usecase.SaveBestScoreUseCase
 import com.example.game_2048.domain.usecase.StartNewGameUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +40,7 @@ class GameViewModelTest {
     private lateinit var moveTilesUseCase: MoveTilesUseCase
     private lateinit var getBestScoreUseCase: GetBestScoreUseCase
     private lateinit var saveBestScoreUseCase: SaveBestScoreUseCase
+    private lateinit var themePreferences: ThemePreferences
 
     @Before
     fun setup() {
@@ -44,7 +48,9 @@ class GameViewModelTest {
         gameEngine = GameEngine()
         gameRepository = mockk(relaxed = true)
         featureFlags = FeatureFlags()
+        themePreferences = mockk(relaxed = true)
         coEvery { gameRepository.getBestScore() } returns 0
+        every { themePreferences.getThemeMode() } returns ThemeMode.SYSTEM
 
         startNewGameUseCase = StartNewGameUseCase(gameEngine)
         moveTilesUseCase = MoveTilesUseCase(gameEngine)
@@ -63,6 +69,7 @@ class GameViewModelTest {
             moveTilesUseCase,
             getBestScoreUseCase,
             saveBestScoreUseCase,
+            themePreferences,
             featureFlags
         )
     }

@@ -26,4 +26,5 @@
     <!-- Accessibility -->
     <string name="cd_undo">Undo</string>
     <string name="cd_new_game">New Game</string>
+    <string name="cd_theme">Toggle theme</string>
 </resources>

@@ -3,8 +3,10 @@ package com.example.game_2048.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.game_2048.config.FeatureFlags
+import com.example.game_2048.data.local.ThemePreferences
 import com.example.game_2048.domain.model.Direction
 import com.example.game_2048.domain.model.GameState
+import com.example.game_2048.domain.model.ThemeMode
 import com.example.game_2048.domain.usecase.GetBestScoreUseCase
 import com.example.game_2048.domain.usecase.MoveTilesUseCase
 import com.example.game_2048.domain.usecase.SaveBestScoreUseCase
@@ -23,11 +25,15 @@ class GameViewModel @Inject constructor(
     private val moveTilesUseCase: MoveTilesUseCase,
     private val getBestScoreUseCase: GetBestScoreUseCase,
     private val saveBestScoreUseCase: SaveBestScoreUseCase,
+    private val themePreferences: ThemePreferences,
     val featureFlags: FeatureFlags
 ) : ViewModel() {
 
     private val _gameState = MutableStateFlow(startNewGameUseCase())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
+
+    private val _themeMode = MutableStateFlow(themePreferences.getThemeMode())
+    val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
 
     private var previousState: GameState? = null
     private var loadBestScoreJob: Job? = null
@@ -57,7 +63,7 @@ class GameViewModel @Inject constructor(
                     try {
                         saveBestScoreUseCase(newState.score)
                     } catch (_: Exception) {
-                        // Persist failed — best score not saved this time
+                        // Persist failed
                     }
                 }
             }
@@ -81,6 +87,12 @@ class GameViewModel @Inject constructor(
 
     fun canUndo(): Boolean = featureFlags.isUndoEnabled() && previousState != null
 
+    fun cycleTheme() {
+        val next = _themeMode.value.next()
+        _themeMode.value = next
+        themePreferences.setThemeMode(next)
+    }
+
     private fun loadBestScore() {
         loadBestScoreJob = viewModelScope.launch {
             try {
@@ -90,7 +102,7 @@ class GameViewModel @Inject constructor(
                     _gameState.value = current.copy(bestScore = bestScore)
                 }
             } catch (_: Exception) {
-                // DB read failed — keep bestScore at 0
+                // DB read failed
             }
         }
     }

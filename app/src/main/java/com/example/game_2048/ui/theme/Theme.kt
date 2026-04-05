@@ -94,9 +94,15 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun Game2048Theme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: com.example.game_2048.domain.model.ThemeMode =
+        com.example.game_2048.domain.model.ThemeMode.SYSTEM,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (themeMode) {
+        com.example.game_2048.domain.model.ThemeMode.LIGHT -> false
+        com.example.game_2048.domain.model.ThemeMode.DARK -> true
+        com.example.game_2048.domain.model.ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     val gameColors = if (darkTheme) {

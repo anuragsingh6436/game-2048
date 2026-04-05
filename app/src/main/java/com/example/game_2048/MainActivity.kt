@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.game_2048.presentation.GameViewModel
 import com.example.game_2048.presentation.screen.GameScreen
@@ -16,8 +18,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Game2048Theme {
-                val viewModel: GameViewModel = hiltViewModel()
+            val viewModel: GameViewModel = hiltViewModel()
+            val themeMode by viewModel.themeMode.collectAsState()
+
+            Game2048Theme(themeMode = themeMode) {
                 GameScreen(viewModel = viewModel)
             }
         }

@@ -26,6 +26,9 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Contrast
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.game_2048.R
 import com.example.game_2048.domain.model.Direction
+import com.example.game_2048.domain.model.ThemeMode
 import com.example.game_2048.presentation.GameViewModel
 import com.example.game_2048.presentation.components.GameBoard
 import com.example.game_2048.presentation.components.GameOverOverlay
@@ -69,6 +73,7 @@ fun GameScreen(
     modifier: Modifier = Modifier
 ) {
     val gameState by viewModel.gameState.collectAsState()
+    val themeMode by viewModel.themeMode.collectAsState()
     val gameColors = LocalGameColors.current
     val view = LocalView.current
 
@@ -116,6 +121,7 @@ fun GameScreen(
                 bestScore = gameState.bestScore,
                 scoreGained = gameState.scoreGained,
                 moveCount = gameState.moveCount,
+                themeMode = themeMode,
                 canUndo = viewModel.canUndo(),
                 showUndoButton = viewModel.featureFlags.isUndoEnabled(),
                 onRestart = {
@@ -125,6 +131,10 @@ fun GameScreen(
                 onUndo = {
                     view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                     viewModel.undoMove()
+                },
+                onToggleTheme = {
+                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    viewModel.cycleTheme()
                 }
             )
 
@@ -311,10 +321,12 @@ private fun Header(
     bestScore: Int,
     scoreGained: Int,
     moveCount: Int,
+    themeMode: ThemeMode,
     canUndo: Boolean,
     showUndoButton: Boolean,
     onRestart: () -> Unit,
-    onUndo: () -> Unit
+    onUndo: () -> Unit,
+    onToggleTheme: () -> Unit
 ) {
     val gameColors = LocalGameColors.current
 
@@ -348,12 +360,32 @@ private fun Header(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // Row 2: Actions only, right-aligned
+    // Row 2: Actions, right-aligned
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Theme toggle
+        PressableButton(
+            onClick = onToggleTheme,
+            backgroundColor = gameColors.restartButton,
+            contentPadding = PressableButtonPadding.Icon
+        ) {
+            Icon(
+                imageVector = when (themeMode) {
+                    ThemeMode.LIGHT -> Icons.Outlined.LightMode
+                    ThemeMode.DARK -> Icons.Outlined.DarkMode
+                    ThemeMode.SYSTEM -> Icons.Outlined.Contrast
+                },
+                contentDescription = stringResource(R.string.cd_theme),
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.size(8.dp))
+
         if (showUndoButton) {
             PressableButton(
                 onClick = onUndo,
