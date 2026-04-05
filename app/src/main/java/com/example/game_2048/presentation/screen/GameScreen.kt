@@ -1,9 +1,11 @@
 package com.example.game_2048.presentation.screen
 
 import android.view.HapticFeedbackConstants
+import android.view.SoundEffectConstants
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,6 +36,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +60,7 @@ import com.example.game_2048.presentation.components.GameOverOverlay
 import com.example.game_2048.presentation.components.ScoreCard
 import com.example.game_2048.presentation.components.ScorePopup
 import com.example.game_2048.ui.theme.LocalGameColors
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -72,6 +76,10 @@ fun GameScreen(
 
     var totalDragX by remember { mutableFloatStateOf(0f) }
     var totalDragY by remember { mutableFloatStateOf(0f) }
+
+    // Board shake on invalid swipe
+    val shakeOffset = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
 
     // Haptic on game over
     LaunchedEffect(gameState.isGameOver) {
@@ -132,6 +140,9 @@ fun GameScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .graphicsLayer {
+                        translationX = shakeOffset.value
+                    }
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragStart = {
@@ -162,6 +173,8 @@ fun GameScreen(
                                     val moved =
                                         viewModel.gameState.value.moveCount > prevMoveCount
                                     if (moved) {
+                                        // Sound click on valid move
+                                        view.playSoundEffect(SoundEffectConstants.CLICK)
                                         if (viewModel.gameState.value.score > prevScore) {
                                             view.performHapticFeedback(
                                                 HapticFeedbackConstants.VIRTUAL_KEY
@@ -169,6 +182,18 @@ fun GameScreen(
                                         } else {
                                             view.performHapticFeedback(
                                                 HapticFeedbackConstants.CLOCK_TICK
+                                            )
+                                        }
+                                    } else {
+                                        // Board shake on invalid swipe
+                                        scope.launch {
+                                            shakeOffset.snapTo(12f)
+                                            shakeOffset.animateTo(
+                                                0f,
+                                                spring(
+                                                    dampingRatio = 0.3f,
+                                                    stiffness = Spring.StiffnessHigh
+                                                )
                                             )
                                         }
                                     }

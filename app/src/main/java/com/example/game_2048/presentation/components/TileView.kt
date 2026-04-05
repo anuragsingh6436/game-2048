@@ -3,6 +3,7 @@ package com.example.game_2048.presentation.components
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -28,6 +29,7 @@ import com.example.game_2048.domain.model.Tile
 import com.example.game_2048.ui.theme.LocalGameColors
 import com.example.game_2048.ui.theme.TileColors
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private val TileShape = RoundedCornerShape(14.dp)
 
@@ -56,6 +58,11 @@ fun TileView(
         Animatable(1f)
     }
 
+    // Merge flash: brief white overlay
+    val mergeFlash = remember(tile.id) {
+        Animatable(if (tile.mergedFrom) 0f else 0f)
+    }
+
     LaunchedEffect(tile.id) {
         if (tile.isNew) {
             delay(80)
@@ -72,7 +79,11 @@ fun TileView(
     LaunchedEffect(tile.id) {
         if (tile.mergedFrom) {
             delay(100)
+            mergeFlash.snapTo(if (isDark) 0.20f else 0.35f)
             mergeScale.snapTo(1.2f)
+            launch {
+                mergeFlash.animateTo(0f, tween(250))
+            }
             mergeScale.animateTo(
                 targetValue = 1f,
                 animationSpec = spring(
@@ -149,6 +160,15 @@ fun TileView(
                 .matchParentSize()
                 .background(frostBrush)
         )
+
+        // Merge flash overlay
+        if (mergeFlash.value > 0f) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(Color.White.copy(alpha = mergeFlash.value))
+            )
+        }
 
         Text(
             text = tile.value.toString(),
