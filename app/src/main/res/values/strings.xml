@@ -20,6 +20,9 @@
     <string name="restart">Restart</string>
     <string name="try_again">Try Again</string>
 
+    <!-- Score popup -->
+    <string name="score_gained">+%d</string>
+
     <!-- Accessibility -->
     <string name="cd_undo">Undo</string>
     <string name="cd_new_game">New Game</string>

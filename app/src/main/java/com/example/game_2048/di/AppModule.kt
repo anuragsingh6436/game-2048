@@ -23,8 +23,8 @@ object AppModule {
         return Room.databaseBuilder(
             context,
             GameDatabase::class.java,
-            "game_2048_db"
-        ).build()
+            "numra_db"
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Provides

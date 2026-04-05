@@ -240,6 +240,34 @@ class GameViewModelTest {
     // ==================== Win dismiss ====================
 
     @Test
+    fun `dismissWin sets winDismissed and hides overlay`() = runTest {
+        val viewModel = createViewModel()
+
+        // Manually construct a won state to inject via engine
+        val wonGrid = listOf(
+            listOf(1024, 1024, 0, 0),
+            listOf(0, 0, 0, 0),
+            listOf(0, 0, 0, 0),
+            listOf(0, 0, 0, 0)
+        )
+        // Replace the game state with a grid that will win on LEFT swipe
+        val currentState = viewModel.gameState.value
+        val preppedState = currentState.copy(grid = wonGrid)
+        // Use the engine directly to produce a won state
+        val wonState = gameEngine.move(preppedState, Direction.LEFT)
+        assertTrue(wonState.hasWon)
+        assertTrue(wonState.showWinOverlay)
+    }
+
+    @Test
+    fun `dismissWin is idempotent when not won`() = runTest {
+        val viewModel = createViewModel()
+        val stateBefore = viewModel.gameState.value
+        viewModel.dismissWin()
+        assertEquals(stateBefore, viewModel.gameState.value)
+    }
+
+    @Test
     fun `showWinOverlay is false after dismissal`() {
         val state = GameState(hasWon = true, winDismissed = false)
         assertTrue(state.showWinOverlay)

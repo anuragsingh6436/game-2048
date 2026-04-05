@@ -12,9 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.game_2048.R
 import com.example.game_2048.ui.theme.AccentGold
 import kotlinx.coroutines.launch
 
@@ -26,7 +28,6 @@ fun ScorePopup(
 ) {
     if (scoreGained <= 0) return
 
-    // Re-create animation on every move
     val alpha = remember(moveCount) { Animatable(1f) }
     val offsetY = remember(moveCount) { Animatable(0f) }
 
@@ -50,7 +51,7 @@ fun ScorePopup(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "+$scoreGained",
+            text = stringResource(R.string.score_gained, scoreGained),
             color = AccentGold,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,

@@ -102,120 +102,116 @@ fun GameScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // ── Header ──────────────────────────────────────────────
-        Header(
-            score = gameState.score,
-            bestScore = gameState.bestScore,
-            scoreGained = gameState.scoreGained,
-            moveCount = gameState.moveCount,
-            canUndo = viewModel.canUndo(),
-            showUndoButton = viewModel.featureFlags.isUndoEnabled(),
-            onRestart = {
-                view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-                viewModel.startNewGame()
-            },
-            onUndo = {
-                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                viewModel.undoMove()
-            }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // ── Board with swipe gestures ───────────────────────────
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = {
-                            totalDragX = 0f
-                            totalDragY = 0f
-                        },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            totalDragX += dragAmount.x
-                            totalDragY += dragAmount.y
-                        },
-                        onDragEnd = {
-                            val threshold = 40f
-                            val absX = abs(totalDragX)
-                            val absY = abs(totalDragY)
-
-                            if (absX > threshold || absY > threshold) {
-                                val direction = if (absX > absY) {
-                                    if (totalDragX > 0) Direction.RIGHT else Direction.LEFT
-                                } else {
-                                    if (totalDragY > 0) Direction.DOWN else Direction.UP
-                                }
-
-                                val prevScore = gameState.score
-                                val prevMoveCount = gameState.moveCount
-                                viewModel.onSwipe(direction)
-
-                                val moved =
-                                    viewModel.gameState.value.moveCount > prevMoveCount
-                                if (moved) {
-                                    if (viewModel.gameState.value.score > prevScore) {
-                                        // Merge happened — medium haptic
-                                        view.performHapticFeedback(
-                                            HapticFeedbackConstants.VIRTUAL_KEY
-                                        )
-                                    } else {
-                                        // Moved without merge — light tick
-                                        view.performHapticFeedback(
-                                            HapticFeedbackConstants.CLOCK_TICK
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    )
-                }
-        ) {
-            GameBoard(state = gameState)
-
-            GameOverOverlay(
-                isGameOver = gameState.isGameOver,
-                showWinOverlay = gameState.showWinOverlay,
+            Header(
                 score = gameState.score,
+                bestScore = gameState.bestScore,
+                scoreGained = gameState.scoreGained,
+                moveCount = gameState.moveCount,
+                canUndo = viewModel.canUndo(),
+                showUndoButton = viewModel.featureFlags.isUndoEnabled(),
                 onRestart = {
                     view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
                     viewModel.startNewGame()
                 },
-                onKeepPlaying = {
-                    view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-                    viewModel.dismissWin()
+                onUndo = {
+                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    viewModel.undoMove()
                 }
             )
-        }
 
-        Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = stringResource(R.string.game_hint),
-            color = gameColors.textSecondary,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Normal,
-            letterSpacing = 0.1.sp
-        )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragStart = {
+                                totalDragX = 0f
+                                totalDragY = 0f
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                totalDragX += dragAmount.x
+                                totalDragY += dragAmount.y
+                            },
+                            onDragEnd = {
+                                val threshold = 40f
+                                val absX = abs(totalDragX)
+                                val absY = abs(totalDragY)
 
-        Spacer(modifier = Modifier.weight(1f))
+                                if (absX > threshold || absY > threshold) {
+                                    val direction = if (absX > absY) {
+                                        if (totalDragX > 0) Direction.RIGHT else Direction.LEFT
+                                    } else {
+                                        if (totalDragY > 0) Direction.DOWN else Direction.UP
+                                    }
 
-        if (gameState.moveCount > 0) {
+                                    val prevScore = gameState.score
+                                    val prevMoveCount = gameState.moveCount
+                                    viewModel.onSwipe(direction)
+
+                                    val moved =
+                                        viewModel.gameState.value.moveCount > prevMoveCount
+                                    if (moved) {
+                                        if (viewModel.gameState.value.score > prevScore) {
+                                            view.performHapticFeedback(
+                                                HapticFeedbackConstants.VIRTUAL_KEY
+                                            )
+                                        } else {
+                                            view.performHapticFeedback(
+                                                HapticFeedbackConstants.CLOCK_TICK
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+            ) {
+                GameBoard(state = gameState)
+
+                GameOverOverlay(
+                    isGameOver = gameState.isGameOver,
+                    showWinOverlay = gameState.showWinOverlay,
+                    score = gameState.score,
+                    onRestart = {
+                        view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                        viewModel.startNewGame()
+                    },
+                    onKeepPlaying = {
+                        view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                        viewModel.dismissWin()
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(28.dp))
+
             Text(
-                text = stringResource(R.string.moves_count, gameState.moveCount),
-                color = gameColors.textSecondary.copy(alpha = 0.6f),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 0.2.sp
+                text = stringResource(R.string.game_hint),
+                color = gameColors.textSecondary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Normal,
+                letterSpacing = 0.1.sp
             )
-            Spacer(modifier = Modifier.height(12.dp))
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (gameState.moveCount > 0) {
+                Text(
+                    text = stringResource(R.string.moves_count, gameState.moveCount),
+                    color = gameColors.textSecondary.copy(alpha = 0.6f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 0.2.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
-        } // Column
-    } // Box
+    }
 }
 
 // ─── Ambient Background ──────────────────────────────────────────────

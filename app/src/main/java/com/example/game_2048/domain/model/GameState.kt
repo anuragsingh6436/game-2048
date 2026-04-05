@@ -1,5 +1,8 @@
 package com.example.game_2048.domain.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class GameState(
     val grid: List<List<Int>> = List(GRID_SIZE) { List(GRID_SIZE) { 0 } },
     val tiles: List<Tile> = emptyList(),
