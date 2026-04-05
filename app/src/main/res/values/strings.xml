@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">2048</string>
+    <string name="app_name">Numra</string>
 
     <!-- Header -->
-    <string name="game_title">2048</string>
+    <string name="game_title">numra</string>
     <string name="label_score">SCORE</string>
     <string name="label_best">BEST</string>
     <string name="swipe_to_play">Swipe to play</string>
