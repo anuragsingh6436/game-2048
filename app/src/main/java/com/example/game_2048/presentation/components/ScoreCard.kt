@@ -125,7 +125,8 @@ fun ScoreCard(
                 color = gameColors.scoreValue,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.5).sp
+                letterSpacing = (-0.5).sp,
+                maxLines = 1
             )
         }
     }

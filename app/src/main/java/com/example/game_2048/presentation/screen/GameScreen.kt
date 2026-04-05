@@ -369,7 +369,7 @@ private fun Header(
                 )
             }
 
-            Spacer(modifier = Modifier.padding(start = 8.dp))
+            Spacer(modifier = Modifier.size(8.dp))
         }
 
         PressableButton(

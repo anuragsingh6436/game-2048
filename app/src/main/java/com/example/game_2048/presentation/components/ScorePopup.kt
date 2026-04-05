@@ -34,12 +34,12 @@ fun ScorePopup(
     val popupColor = if (isDark) AccentGoldBright else AccentGold
 
     val alpha = remember(moveCount) { Animatable(1f) }
-    val offsetY = remember(moveCount) { Animatable(0f) }
+    val offsetY = remember(moveCount) { Animatable(-8f) }
 
     LaunchedEffect(moveCount) {
         launch {
             offsetY.animateTo(
-                targetValue = -40f,
+                targetValue = -44f,
                 animationSpec = tween(700, easing = FastOutSlowInEasing)
             )
         }
