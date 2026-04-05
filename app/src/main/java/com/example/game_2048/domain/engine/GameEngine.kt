@@ -24,7 +24,6 @@ class GameEngine @Inject constructor() {
     private fun nextId(): Long = nextTileId++
 
     fun createInitialState(random: Random = Random): GameState {
-        resetIdCounter()
         var grid = emptyGrid()
         grid = addRandomTile(grid, random)
         grid = addRandomTile(grid, random)

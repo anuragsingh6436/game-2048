@@ -8,12 +8,12 @@ import com.example.game_2048.domain.engine.GameEngine
 import com.example.game_2048.domain.model.Direction
 import com.example.game_2048.domain.model.GameState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
@@ -22,22 +22,24 @@ class GameViewModel @Inject constructor(
     val featureFlags: FeatureFlags
 ) : ViewModel() {
 
-    private val _gameState = MutableStateFlow(GameState())
+    private val _gameState = MutableStateFlow(gameEngine.createInitialState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
     private var previousState: GameState? = null
+    private var loadBestScoreJob: Job? = null
 
     init {
-        startNewGame()
+        loadBestScore()
     }
 
     fun startNewGame() {
-        viewModelScope.launch {
-            val bestScore = scoreRepository.getBestScore()
-            val initialState = gameEngine.createInitialState()
-            _gameState.value = initialState.copy(bestScore = bestScore)
-            previousState = null
-        }
+        loadBestScoreJob?.cancel()
+
+        val initialState = gameEngine.createInitialState()
+        _gameState.value = initialState
+        previousState = null
+
+        loadBestScore()
     }
 
     fun onSwipe(direction: Direction) {
@@ -51,7 +53,11 @@ class GameViewModel @Inject constructor(
             _gameState.value = newState
             if (newState.score > currentState.bestScore) {
                 viewModelScope.launch {
-                    scoreRepository.saveBestScore(newState.score)
+                    try {
+                        scoreRepository.saveBestScore(newState.score)
+                    } catch (_: Exception) {
+                        // DataStore write failed — best score not persisted this time
+                    }
                 }
             }
         }
@@ -73,4 +79,18 @@ class GameViewModel @Inject constructor(
     }
 
     fun canUndo(): Boolean = featureFlags.isUndoEnabled() && previousState != null
+
+    private fun loadBestScore() {
+        loadBestScoreJob = viewModelScope.launch {
+            try {
+                val bestScore = scoreRepository.getBestScore()
+                val current = _gameState.value
+                if (bestScore > current.bestScore) {
+                    _gameState.value = current.copy(bestScore = bestScore)
+                }
+            } catch (_: Exception) {
+                // DataStore read failed — keep bestScore at 0
+            }
+        }
+    }
 }
