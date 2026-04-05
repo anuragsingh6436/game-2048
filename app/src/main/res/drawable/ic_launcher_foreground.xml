@@ -6,52 +6,57 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- 2x2 grid of rounded tiles — abstract "merge" symbol -->
-    <!-- Safe zone is 24-84 (60x60 area centered in 108x108) -->
+    <!--
+        Numra Icon — 2x2 rounded tile grid
+        Safe zone: 24→84 (center 60x60)
+        Grid: 4dp gap, tiles ~27dp each, 6dp corner radius
+        Centered at 54,54
+    -->
 
-    <!-- Top-left tile (large, gold — the "merged" tile) -->
-    <path android:pathData="M28,28 L50,28 Q52,28 52,30 L52,52 Q52,54 50,54 L28,54 Q26,54 26,52 L26,30 Q26,28 28,28 Z">
+    <!-- Top-left tile — Gold gradient (the star tile) -->
+    <path android:pathData="M30,30 h21 a6,6 0,0,1 6,6 v21 a6,6 0,0,1 -6,6 h-21 a6,6 0,0,1 -6,-6 v-21 a6,6 0,0,1 6,-6 z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
-                android:startX="26"
-                android:startY="28"
-                android:endX="52"
-                android:endY="54">
-                <item android:color="#FFF2C94C" android:offset="0.0" />
-                <item android:color="#FFED8A5A" android:offset="1.0" />
+                android:startX="24"
+                android:startY="30"
+                android:endX="57"
+                android:endY="63">
+                <item android:color="#FFF7D26B" android:offset="0.0" />
+                <item android:color="#FFEF9B50" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Top-right tile (warm taupe) -->
-    <path android:pathData="M58,28 L80,28 Q82,28 82,30 L82,52 Q82,54 80,54 L58,54 Q56,54 56,52 L56,30 Q56,28 58,28 Z"
-        android:fillColor="#FFC2B5A7" />
+    <!-- Top-right tile — Light taupe -->
+    <path android:pathData="M63,30 h21 a6,6 0,0,1 6,6 v21 a6,6 0,0,1 -6,6 h-21 a6,6 0,0,1 -6,-6 v-21 a6,6 0,0,1 6,-6 z"
+        android:fillColor="#FFCEC3B5" />
 
-    <!-- Bottom-left tile (warm taupe) -->
-    <path android:pathData="M28,58 L50,58 Q52,58 52,60 L52,80 Q52,82 50,82 L28,82 Q26,82 26,80 L26,60 Q26,58 28,58 Z"
-        android:fillColor="#FFC2B5A7" />
+    <!-- Bottom-left tile — Light taupe -->
+    <path android:pathData="M30,63 h21 a6,6 0,0,1 6,6 v21 a6,6 0,0,1 -6,6 h-21 a6,6 0,0,1 -6,-6 v-21 a6,6 0,0,1 6,-6 z"
+        android:fillColor="#FFCEC3B5" />
 
-    <!-- Bottom-right tile (amber — about to merge) -->
-    <path android:pathData="M58,58 L80,58 Q82,58 82,60 L82,80 Q82,82 80,82 L58,82 Q56,82 56,80 L56,60 Q56,58 58,58 Z">
+    <!-- Bottom-right tile — Warm amber gradient -->
+    <path android:pathData="M63,63 h21 a6,6 0,0,1 6,6 v21 a6,6 0,0,1 -6,6 h-21 a6,6 0,0,1 -6,-6 v-21 a6,6 0,0,1 6,-6 z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
-                android:startX="56"
-                android:startY="58"
-                android:endX="82"
-                android:endY="82">
+                android:startX="57"
+                android:startY="63"
+                android:endX="90"
+                android:endY="96">
                 <item android:color="#FFEDCC61" android:offset="0.0" />
                 <item android:color="#FFF2C94C" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Subtle "N" hint — diagonal connection between top-left and bottom-right -->
-    <path
-        android:pathData="M46,48 L62,62"
-        android:strokeWidth="2.5"
-        android:strokeColor="#30776E65"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000" />
+    <!-- Subtle highlight on top-left tile (depth / glass effect) -->
+    <path android:pathData="M30,30 h21 a6,6 0,0,1 6,6 v8 h-33 v-8 a6,6 0,0,1 6,-6 z"
+        android:fillColor="#18FFFFFF" />
+
+    <!-- Subtle highlight on bottom-right tile -->
+    <path android:pathData="M63,63 h21 a6,6 0,0,1 6,6 v8 h-33 v-8 a6,6 0,0,1 6,-6 z"
+        android:fillColor="#18FFFFFF" />
+
 </vector>
