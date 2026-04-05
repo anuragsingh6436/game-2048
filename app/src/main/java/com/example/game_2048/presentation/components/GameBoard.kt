@@ -5,6 +5,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
@@ -33,9 +34,9 @@ import com.example.game_2048.ui.theme.LocalGameColors
 import kotlinx.coroutines.launch
 import kotlin.math.min
 
-private val BoardShape = RoundedCornerShape(14.dp)
+private val BoardShape = RoundedCornerShape(20.dp)
 private val CellShape = RoundedCornerShape(10.dp)
-private val BOARD_PADDING = 10.dp
+private val BOARD_PADDING = 12.dp
 private val CELL_SPACING = 8.dp
 
 private const val SLIDE_DURATION_MS = 100
@@ -54,26 +55,56 @@ fun GameBoard(
         // Ambient glow behind the board
         BoardGlow(glowColor = gameColors.glowBoard)
 
-        // The board itself
+        // Glass board container
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .shadow(
-                    elevation = 4.dp,
+                    elevation = if (gameColors.isDark) 12.dp else 8.dp,
                     shape = BoardShape,
-                    ambientColor = Color.Black.copy(alpha = 0.08f),
-                    spotColor = Color.Black.copy(alpha = 0.06f)
+                    ambientColor = if (gameColors.isDark)
+                        Color.Black.copy(alpha = 0.3f)
+                    else
+                        gameColors.boardBackground.copy(alpha = 0.2f),
+                    spotColor = if (gameColors.isDark)
+                        Color.Black.copy(alpha = 0.25f)
+                    else
+                        gameColors.boardBackground.copy(alpha = 0.15f)
                 )
                 .clip(BoardShape)
-                .background(gameColors.boardBackground)
+                .background(gameColors.boardGlass)
+                .border(
+                    width = 1.dp,
+                    color = gameColors.boardBorder,
+                    shape = BoardShape
+                )
                 .padding(BOARD_PADDING)
         ) {
+            // Frost highlight — top-edge light reflection
+            FrostHighlight(frostColor = gameColors.boardFrost)
+
             EmptyCellsGrid(emptyColor = gameColors.emptyCell)
 
             TilesOverlay(tiles = state.tiles)
         }
     }
+}
+
+@Composable
+private fun FrostHighlight(frostColor: Color) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(frostColor, Color.Transparent),
+                    startY = 0f,
+                    endY = 120f
+                )
+            )
+    )
 }
 
 @Composable
@@ -158,9 +189,6 @@ private fun AnimatedTile(
     cellSize: Dp,
     step: Dp
 ) {
-    // Animate column and row indices as floats
-    // New tiles start at their current position (no slide)
-    // Moved tiles start at their previous position and slide to current
     val startCol = if (tile.isNew) tile.col.toFloat() else tile.previousCol.toFloat()
     val startRow = if (tile.isNew) tile.row.toFloat() else tile.previousRow.toFloat()
 

@@ -22,6 +22,14 @@ val DarkTextOnTile = Color(0xFFF9F6F2)
 val BoardBackgroundLight = Color(0xFFC2B5A7)   // warm taupe
 val BoardBackgroundDark = Color(0xFF252530)     // charcoal slate
 
+// ─── Board Glass ──────────────────────────────────────────────────
+val BoardGlassLight = Color(0xE0C2B5A7)        // taupe at 88% opacity
+val BoardGlassDark = Color(0xBF252530)          // charcoal at 75% opacity
+val BoardBorderLight = Color(0x1FFFFFFF)        // white at 12%
+val BoardBorderDark = Color(0x14FFFFFF)         // white at 8%
+val BoardFrostLight = Color(0x0DFFFFFF)         // white at 5% (top highlight)
+val BoardFrostDark = Color(0x08FFFFFF)          // white at 3%
+
 // ─── Score Cards ──────────────────────────────────────────────────
 val ScoreCardLight = Color(0xFFC2B5A7)
 val ScoreCardDark = Color(0xFF2A2A36)
