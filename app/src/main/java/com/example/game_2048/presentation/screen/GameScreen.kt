@@ -57,6 +57,7 @@ import com.example.game_2048.presentation.components.ScoreCard
 import com.example.game_2048.presentation.components.ScorePopup
 import com.example.game_2048.ui.theme.LocalGameColors
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 @Composable
@@ -88,9 +89,13 @@ fun GameScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(gameColors.background)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(gameColors.background, gameColors.backgroundGradientEnd)
+                )
+            )
     ) {
-        // ── Layer 0: Ambient gradient blobs ──────────────────────
+        // ── Layer 0: Ambient blobs + vignette ───────────────────
         AmbientBackground()
 
         // ── Layer 1: Content ─────────────────────────────────────
@@ -214,44 +219,93 @@ fun GameScreen(
     }
 }
 
-// ─── Ambient Background ──────────────────────────────────────────────
+// ─── Background System ──────────────────────────────────────────────
+//
+// 3 layers drawn in a single Canvas pass:
+//   1. Ambient blobs — color warmth / depth
+//   2. Center focus spot — draws eye toward the board
+//   3. Edge vignette — subtle darkening at periphery
+//
+// All radial gradients, zero allocation, renders once per theme change.
 
 @Composable
 private fun AmbientBackground() {
     val gameColors = LocalGameColors.current
-    val glowAlpha = if (gameColors.isDark) 0.35f else 0.45f
+    val isDark = gameColors.isDark
+    val blobAlpha = if (isDark) 0.40f else 0.50f
+    val vignetteAlpha = if (isDark) 0.35f else 0.06f
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         val w = size.width
         val h = size.height
-        val radius = min(w, h) * 0.55f
+        val short = min(w, h)
 
-        // Top-right warm/cool blob
+        // ── 1. Ambient blobs ────────────────────────────────────
+        // Top-right: warm wheat (light) / deep plum (dark)
+        val blobRadius = short * 0.6f
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    gameColors.glowTopRight.copy(alpha = glowAlpha),
+                    gameColors.glowTopRight.copy(alpha = blobAlpha),
+                    gameColors.glowTopRight.copy(alpha = blobAlpha * 0.3f),
                     Color.Transparent
                 ),
-                center = Offset(w * 0.85f, h * 0.08f),
-                radius = radius
+                center = Offset(w * 0.88f, h * 0.06f),
+                radius = blobRadius
             ),
-            radius = radius,
-            center = Offset(w * 0.85f, h * 0.08f)
+            radius = blobRadius,
+            center = Offset(w * 0.88f, h * 0.06f)
         )
 
-        // Bottom-left warm/cool blob
+        // Bottom-left: warm sand (light) / slate blue (dark)
+        val blobRadius2 = short * 0.5f
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
-                    gameColors.glowBottomLeft.copy(alpha = glowAlpha * 0.7f),
+                    gameColors.glowBottomLeft.copy(alpha = blobAlpha * 0.6f),
+                    gameColors.glowBottomLeft.copy(alpha = blobAlpha * 0.15f),
                     Color.Transparent
                 ),
-                center = Offset(w * 0.1f, h * 0.85f),
-                radius = radius * 0.9f
+                center = Offset(w * 0.08f, h * 0.88f),
+                radius = blobRadius2
             ),
-            radius = radius * 0.9f,
-            center = Offset(w * 0.1f, h * 0.85f)
+            radius = blobRadius2,
+            center = Offset(w * 0.08f, h * 0.88f)
+        )
+
+        // ── 2. Center focus spot ────────────────────────────────
+        // Soft glow at ~42% vertical (where the board sits)
+        val focusRadius = short * 0.45f
+        val focusCenter = Offset(w * 0.5f, h * 0.42f)
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    gameColors.glowCenter.copy(alpha = blobAlpha * 0.5f),
+                    Color.Transparent
+                ),
+                center = focusCenter,
+                radius = focusRadius
+            ),
+            radius = focusRadius,
+            center = focusCenter
+        )
+
+        // ── 3. Edge vignette ────────────────────────────────────
+        // Radial: transparent center → darkened edges
+        val vignetteRadius = max(w, h) * 0.75f
+        val vignetteCenter = Offset(w * 0.5f, h * 0.4f)
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color.Transparent,
+                    Color.Transparent,
+                    gameColors.vignette.copy(alpha = vignetteAlpha)
+                ),
+                center = vignetteCenter,
+                radius = vignetteRadius
+            ),
+            radius = vignetteRadius * 1.5f,
+            center = vignetteCenter
         )
     }
 }

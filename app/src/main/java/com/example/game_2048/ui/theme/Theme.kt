@@ -19,6 +19,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 @Stable
 data class GameColors(
     val background: Color,
+    val backgroundGradientEnd: Color,
     val boardBackground: Color,
     val emptyCell: Color,
     val textPrimary: Color,
@@ -31,13 +32,16 @@ data class GameColors(
     val overlayScrim: Color,
     val glowTopRight: Color,
     val glowBottomLeft: Color,
+    val glowCenter: Color,
     val glowBoard: Color,
+    val vignette: Color,
     val isDark: Boolean
 )
 
 val LocalGameColors = compositionLocalOf {
     GameColors(
         background = LightBackground,
+        backgroundGradientEnd = LightBgGradientEnd,
         boardBackground = BoardBackgroundLight,
         emptyCell = LightEmptyCell,
         textPrimary = LightTextPrimary,
@@ -50,7 +54,9 @@ val LocalGameColors = compositionLocalOf {
         overlayScrim = Color.White.copy(alpha = 0.78f),
         glowTopRight = GlowTopRightLight,
         glowBottomLeft = GlowBottomLeftLight,
+        glowCenter = GlowCenterLight,
         glowBoard = GlowBoardLight,
+        vignette = VignetteLight,
         isDark = false
     )
 }
@@ -86,7 +92,8 @@ fun Game2048Theme(
 
     val gameColors = if (darkTheme) {
         GameColors(
-            background = DarkBackground,
+            background = DarkBgGradientStart,
+            backgroundGradientEnd = DarkBgGradientEnd,
             boardBackground = BoardBackgroundDark,
             emptyCell = DarkEmptyCell,
             textPrimary = DarkTextPrimary,
@@ -99,12 +106,15 @@ fun Game2048Theme(
             overlayScrim = Color(0xFF0A0A0E).copy(alpha = 0.82f),
             glowTopRight = GlowTopRightDark,
             glowBottomLeft = GlowBottomLeftDark,
+            glowCenter = GlowCenterDark,
             glowBoard = GlowBoardDark,
+            vignette = VignetteDark,
             isDark = true
         )
     } else {
         GameColors(
             background = LightBackground,
+            backgroundGradientEnd = LightBgGradientEnd,
             boardBackground = BoardBackgroundLight,
             emptyCell = LightEmptyCell,
             textPrimary = LightTextPrimary,
@@ -117,7 +127,9 @@ fun Game2048Theme(
             overlayScrim = Color.White.copy(alpha = 0.78f),
             glowTopRight = GlowTopRightLight,
             glowBottomLeft = GlowBottomLeftLight,
+            glowCenter = GlowCenterLight,
             glowBoard = GlowBoardLight,
+            vignette = VignetteLight,
             isDark = false
         )
     }
@@ -126,11 +138,10 @@ fun Game2048Theme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            val bgArgb = gameColors.background.toArgb()
             @Suppress("DEPRECATION")
-            window.statusBarColor = bgArgb
+            window.statusBarColor = gameColors.background.toArgb()
             @Suppress("DEPRECATION")
-            window.navigationBarColor = bgArgb
+            window.navigationBarColor = gameColors.backgroundGradientEnd.toArgb()
             val controller = WindowInsetsControllerCompat(window, view)
             controller.isAppearanceLightStatusBars = !darkTheme
             controller.isAppearanceLightNavigationBars = !darkTheme

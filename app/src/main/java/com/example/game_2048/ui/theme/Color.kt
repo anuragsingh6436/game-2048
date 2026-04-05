@@ -35,16 +35,27 @@ val AccentGold = Color(0xFFF2C94C)
 val AccentOrange = Color(0xFFED8A5A)
 val AccentWin = Color(0xFFF5D96E)              // celebratory gold
 
+// ─── Background gradient endpoints ───────────────────────────────
+val LightBgGradientEnd = Color(0xFFF3EDE0)     // slightly deeper warm cream
+val DarkBgGradientStart = Color(0xFF161620)    // charcoal slate top
+val DarkBgGradientEnd = Color(0xFF0C0C10)      // near-black bottom
+
 // ─── Ambient Glow (background depth) ─────────────────────────────
 // Light mode: warm peach/gold blobs
 val GlowTopRightLight = Color(0xFFF5DEB3)     // soft wheat
 val GlowBottomLeftLight = Color(0xFFE8C9A0)   // warm sand
+val GlowCenterLight = Color(0xFFEDD9B8)       // warm focus spot
 val GlowBoardLight = Color(0xFFC8B8A6)        // board-matching halo
 
 // Dark mode: cool muted blobs
 val GlowTopRightDark = Color(0xFF2A2540)       // deep plum
 val GlowBottomLeftDark = Color(0xFF1E2838)     // slate blue
+val GlowCenterDark = Color(0xFF1C1A28)        // subtle center focus
 val GlowBoardDark = Color(0xFF1E1E2C)         // board-matching halo
+
+// ─── Vignette ────────────────────────────────────────────────────
+val VignetteLight = Color(0xFF8A7E70)          // warm shadow
+val VignetteDark = Color(0xFF000000)           // pure black edge
 
 // ─── Tile Colors ──────────────────────────────────────────────────
 object TileColors {
