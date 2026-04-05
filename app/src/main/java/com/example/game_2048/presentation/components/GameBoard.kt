@@ -22,63 +22,58 @@ import com.example.game_2048.domain.model.GameState.Companion.GRID_SIZE
 import com.example.game_2048.domain.model.Tile
 import com.example.game_2048.ui.theme.LocalGameColors
 
+private val BoardShape = RoundedCornerShape(14.dp)
+private val CellShape = RoundedCornerShape(10.dp)
+private val BOARD_PADDING = 10.dp
+private val CELL_SPACING = 8.dp
+
 @Composable
 fun GameBoard(
     state: GameState,
     modifier: Modifier = Modifier
 ) {
     val gameColors = LocalGameColors.current
-    val boardPadding = 8.dp
-    val cellSpacing = 6.dp
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f)
             .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
-                ambientColor = gameColors.boardBackground.copy(alpha = 0.4f)
+                elevation = 4.dp,
+                shape = BoardShape,
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.06f)
             )
-            .clip(RoundedCornerShape(16.dp))
+            .clip(BoardShape)
             .background(gameColors.boardBackground)
-            .padding(boardPadding)
+            .padding(BOARD_PADDING)
     ) {
-        EmptyCellsGrid(
-            cellSpacing = cellSpacing,
-            emptyColor = gameColors.emptyCell
-        )
+        EmptyCellsGrid(emptyColor = gameColors.emptyCell)
 
-        TilesOverlay(
-            tiles = state.tiles,
-            cellSpacing = cellSpacing
-        )
+        TilesOverlay(tiles = state.tiles)
     }
 }
 
 @Composable
-private fun EmptyCellsGrid(
-    cellSpacing: Dp,
-    emptyColor: Color
-) {
+private fun EmptyCellsGrid(emptyColor: Color) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
     ) {
-        val totalSpacing = cellSpacing * (GRID_SIZE - 1)
+        val totalSpacing = CELL_SPACING * (GRID_SIZE - 1)
         val cellSize = (maxWidth - totalSpacing) / GRID_SIZE
 
         for (row in 0 until GRID_SIZE) {
             for (col in 0 until GRID_SIZE) {
-                val offsetX = (cellSize + cellSpacing) * col
-                val offsetY = (cellSize + cellSpacing) * row
-
                 Box(
                     modifier = Modifier
-                        .offset(x = offsetX, y = offsetY)
+                        .offset(
+                            x = (cellSize + CELL_SPACING) * col,
+                            y = (cellSize + CELL_SPACING) * row
+                        )
                         .size(cellSize)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(CellShape)
                         .background(emptyColor)
                 )
             }
@@ -87,30 +82,24 @@ private fun EmptyCellsGrid(
 }
 
 @Composable
-private fun TilesOverlay(
-    tiles: List<Tile>,
-    cellSpacing: Dp
-) {
+private fun TilesOverlay(tiles: List<Tile>) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
     ) {
-        val totalSpacing = cellSpacing * (GRID_SIZE - 1)
+        val totalSpacing = CELL_SPACING * (GRID_SIZE - 1)
         val cellSize = (maxWidth - totalSpacing) / GRID_SIZE
 
         tiles.forEach { tile ->
             key(tile.id) {
-                val offsetX = (cellSize + cellSpacing) * tile.col
-                val offsetY = (cellSize + cellSpacing) * tile.row
-
                 Box(
-                    modifier = Modifier.offset(x = offsetX, y = offsetY)
-                ) {
-                    TileView(
-                        tile = tile,
-                        cellSize = cellSize
+                    modifier = Modifier.offset(
+                        x = (cellSize + CELL_SPACING) * tile.col,
+                        y = (cellSize + CELL_SPACING) * tile.row
                     )
+                ) {
+                    TileView(tile = tile, cellSize = cellSize)
                 }
             }
         }

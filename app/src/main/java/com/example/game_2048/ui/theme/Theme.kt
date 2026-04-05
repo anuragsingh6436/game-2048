@@ -6,20 +6,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
+@Stable
 data class GameColors(
     val background: Color,
     val boardBackground: Color,
     val emptyCell: Color,
     val textPrimary: Color,
     val textSecondary: Color,
+    val textOnTile: Color,
     val scoreCard: Color,
+    val scoreLabel: Color,
+    val scoreValue: Color,
     val restartButton: Color,
+    val overlayScrim: Color,
     val isDark: Boolean
 )
 
@@ -30,8 +39,12 @@ val LocalGameColors = compositionLocalOf {
         emptyCell = LightEmptyCell,
         textPrimary = LightTextPrimary,
         textSecondary = LightTextSecondary,
+        textOnTile = LightTextOnTile,
         scoreCard = ScoreCardLight,
+        scoreLabel = Color(0xFFEEE4DA).copy(alpha = 0.65f),
+        scoreValue = Color.White,
         restartButton = RestartButtonLight,
+        overlayScrim = Color.White.copy(alpha = 0.78f),
         isDark = false
     )
 }
@@ -41,7 +54,7 @@ private val DarkColorScheme = darkColorScheme(
     secondary = AccentOrange,
     background = DarkBackground,
     surface = DarkSurface,
-    onPrimary = Color.White,
+    onPrimary = Color(0xFF1A1A1A),
     onSecondary = Color.White,
     onBackground = DarkTextPrimary,
     onSurface = DarkTextPrimary
@@ -51,7 +64,7 @@ private val LightColorScheme = lightColorScheme(
     primary = AccentGold,
     secondary = AccentOrange,
     background = LightBackground,
-    surface = Color.White,
+    surface = LightSurface,
     onPrimary = Color.White,
     onSecondary = Color.White,
     onBackground = LightTextPrimary,
@@ -72,8 +85,12 @@ fun Game2048Theme(
             emptyCell = DarkEmptyCell,
             textPrimary = DarkTextPrimary,
             textSecondary = DarkTextSecondary,
+            textOnTile = DarkTextOnTile,
             scoreCard = ScoreCardDark,
+            scoreLabel = Color(0xFF9A96A0),
+            scoreValue = Color(0xFFF0EDE8),
             restartButton = RestartButtonDark,
+            overlayScrim = Color(0xFF0A0A0E).copy(alpha = 0.82f),
             isDark = true
         )
     } else {
@@ -83,8 +100,12 @@ fun Game2048Theme(
             emptyCell = LightEmptyCell,
             textPrimary = LightTextPrimary,
             textSecondary = LightTextSecondary,
+            textOnTile = LightTextOnTile,
             scoreCard = ScoreCardLight,
+            scoreLabel = Color(0xFFEEE4DA).copy(alpha = 0.65f),
+            scoreValue = Color.White,
             restartButton = RestartButtonLight,
+            overlayScrim = Color.White.copy(alpha = 0.78f),
             isDark = false
         )
     }
@@ -93,11 +114,18 @@ fun Game2048Theme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            val bgArgb = gameColors.background.toArgb()
+            @Suppress("DEPRECATION")
+            window.statusBarColor = bgArgb
+            @Suppress("DEPRECATION")
+            window.navigationBarColor = bgArgb
+            val controller = WindowInsetsControllerCompat(window, view)
+            controller.isAppearanceLightStatusBars = !darkTheme
+            controller.isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
-    androidx.compose.runtime.CompositionLocalProvider(
+    CompositionLocalProvider(
         LocalGameColors provides gameColors
     ) {
         MaterialTheme(
