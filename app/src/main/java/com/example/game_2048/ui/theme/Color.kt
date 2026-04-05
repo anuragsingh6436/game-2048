@@ -13,7 +13,7 @@ val LightTextOnTile = Color(0xFFF9F6F2)        // white-ish for dark tiles
 // ─── Dark Palette ─────────────────────────────────────────────────
 val DarkBackground = Color(0xFF121218)         // true dark, warm undertone
 val DarkSurface = Color(0xFF1C1C24)
-val DarkEmptyCell = Color(0xFF2C2C38)          // subtle separator
+val DarkEmptyCell = Color(0xFF26262F)          // darker — clear separation from tiles
 val DarkTextPrimary = Color(0xFFF0EDE8)        // warm white
 val DarkTextSecondary = Color(0xFF8A8690)       // muted label
 val DarkTextOnTile = Color(0xFFF9F6F2)
@@ -38,12 +38,24 @@ val ScoreCardGlassDark = Color(0xCC2A2A36)     // charcoal at 80%
 val ScoreCardBorderLight = Color(0x14FFFFFF)    // white at 8%
 val ScoreCardBorderDark = Color(0x0FFFFFFF)     // white at 6%
 
+// ─── Score Labels & Values ────────────────────────────────────────
+val ScoreLabelLight = Color(0xA6EEE4DA)        // warm cream at 65%
+val ScoreLabelDark = Color(0xFF9A96A0)         // muted lavender
+val ScoreValueLight = Color(0xFFFFFFFF)        // white
+val ScoreValueDark = Color(0xFFF0EDE8)         // warm white
+
 // ─── Buttons ──────────────────────────────────────────────────────
 val RestartButtonLight = Color(0xFF8F7A66)
-val RestartButtonDark = Color(0xFF4A4A5E)
+val RestartButtonDark = Color(0xFF484854)       // neutral charcoal (was blue-tinted)
+
+// ─── Overlays ─────────────────────────────────────────────────────
+val OverlayScrimLight = Color(0xC7FFFFFF)       // white at 78%
+val OverlayScrimDark = Color(0xD10A0A0E)        // near-black at 82%
+val OverlayButtonText = Color(0xFF1C1A18)       // warm near-black for gold buttons
 
 // ─── Accents ──────────────────────────────────────────────────────
 val AccentGold = Color(0xFFF2C94C)
+val AccentGoldBright = Color(0xFFF5D76E)       // brighter variant for dark backgrounds
 val AccentOrange = Color(0xFFED8A5A)
 val AccentWin = Color(0xFFF5D96E)              // celebratory gold
 
@@ -86,9 +98,9 @@ object TileColors {
     private val tile2048L = Color(0xFFEDC22E)
     private val tileSuperL = Color(0xFF3C3A33)
 
-    // Dark mode — rich jewel-tone progression
-    private val tile2D = Color(0xFF38384C)
-    private val tile4D = Color(0xFF434360)
+    // Dark mode — lifted 2/4 for visibility, rich jewel-tone 8+
+    private val tile2D = Color(0xFF3E3E56)     // lightened from #38384C
+    private val tile4D = Color(0xFF4C4C6A)     // lightened from #434360
     private val tile8D = Color(0xFFC47A3F)
     private val tile16D = Color(0xFFD47240)
     private val tile32D = Color(0xFFD65E3E)
@@ -124,9 +136,9 @@ object TileColors {
     }
 
     fun getTextColor(value: Int, isDark: Boolean): Color = when {
-        isDark && value <= 4 -> Color(0xFFB8B4BE)          // muted on low-value dark tiles
+        isDark && value <= 4 -> Color(0xFFC8C4CE)  // brighter for readability
         isDark -> Color(0xFFF9F6F2)
-        value <= 4 -> Color(0xFF776E65)                     // classic brown
+        value <= 4 -> Color(0xFF776E65)             // classic brown
         else -> Color(0xFFF9F6F2)
     }
 

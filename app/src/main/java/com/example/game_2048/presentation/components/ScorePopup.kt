@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.game_2048.R
 import com.example.game_2048.ui.theme.AccentGold
+import com.example.game_2048.ui.theme.AccentGoldBright
+import com.example.game_2048.ui.theme.LocalGameColors
 import kotlinx.coroutines.launch
 
 @Composable
@@ -27,6 +29,9 @@ fun ScorePopup(
     modifier: Modifier = Modifier
 ) {
     if (scoreGained <= 0) return
+
+    val isDark = LocalGameColors.current.isDark
+    val popupColor = if (isDark) AccentGoldBright else AccentGold
 
     val alpha = remember(moveCount) { Animatable(1f) }
     val offsetY = remember(moveCount) { Animatable(0f) }
@@ -52,7 +57,7 @@ fun ScorePopup(
     ) {
         Text(
             text = stringResource(R.string.score_gained, scoreGained),
-            color = AccentGold,
+            color = popupColor,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = (-0.3).sp,

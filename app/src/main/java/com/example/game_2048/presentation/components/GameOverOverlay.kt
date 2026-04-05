@@ -35,6 +35,7 @@ import com.example.game_2048.R
 import com.example.game_2048.ui.theme.AccentGold
 import com.example.game_2048.ui.theme.AccentWin
 import com.example.game_2048.ui.theme.LocalGameColors
+import com.example.game_2048.ui.theme.OverlayButtonText
 
 @Composable
 fun GameOverOverlay(
@@ -106,7 +107,7 @@ fun GameOverOverlay(
                         ) {
                             Text(
                                 text = stringResource(R.string.keep_playing),
-                                color = Color(0xFF1A1A1A),
+                                color = OverlayButtonText,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 letterSpacing = 0.3.sp

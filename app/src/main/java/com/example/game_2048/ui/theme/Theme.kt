@@ -13,7 +13,6 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
 @Stable
@@ -58,10 +57,10 @@ val LocalGameColors = compositionLocalOf {
         scoreCard = ScoreCardLight,
         scoreCardGlass = ScoreCardGlassLight,
         scoreCardBorder = ScoreCardBorderLight,
-        scoreLabel = Color(0xFFEEE4DA).copy(alpha = 0.65f),
-        scoreValue = Color.White,
+        scoreLabel = ScoreLabelLight,
+        scoreValue = ScoreValueLight,
         restartButton = RestartButtonLight,
-        overlayScrim = Color.White.copy(alpha = 0.78f),
+        overlayScrim = OverlayScrimLight,
         glowTopRight = GlowTopRightLight,
         glowBottomLeft = GlowBottomLeftLight,
         glowCenter = GlowCenterLight,
@@ -76,7 +75,7 @@ private val DarkColorScheme = darkColorScheme(
     secondary = AccentOrange,
     background = DarkBackground,
     surface = DarkSurface,
-    onPrimary = Color(0xFF1A1A1A),
+    onPrimary = OverlayButtonText,
     onSecondary = Color.White,
     onBackground = DarkTextPrimary,
     onSurface = DarkTextPrimary
@@ -115,10 +114,10 @@ fun Game2048Theme(
             scoreCard = ScoreCardDark,
             scoreCardGlass = ScoreCardGlassDark,
             scoreCardBorder = ScoreCardBorderDark,
-            scoreLabel = Color(0xFF9A96A0),
-            scoreValue = Color(0xFFF0EDE8),
+            scoreLabel = ScoreLabelDark,
+            scoreValue = ScoreValueDark,
             restartButton = RestartButtonDark,
-            overlayScrim = Color(0xFF0A0A0E).copy(alpha = 0.82f),
+            overlayScrim = OverlayScrimDark,
             glowTopRight = GlowTopRightDark,
             glowBottomLeft = GlowBottomLeftDark,
             glowCenter = GlowCenterDark,
@@ -141,10 +140,10 @@ fun Game2048Theme(
             scoreCard = ScoreCardLight,
             scoreCardGlass = ScoreCardGlassLight,
             scoreCardBorder = ScoreCardBorderLight,
-            scoreLabel = Color(0xFFEEE4DA).copy(alpha = 0.65f),
-            scoreValue = Color.White,
+            scoreLabel = ScoreLabelLight,
+            scoreValue = ScoreValueLight,
             restartButton = RestartButtonLight,
-            overlayScrim = Color.White.copy(alpha = 0.78f),
+            overlayScrim = OverlayScrimLight,
             glowTopRight = GlowTopRightLight,
             glowBottomLeft = GlowBottomLeftLight,
             glowCenter = GlowCenterLight,
