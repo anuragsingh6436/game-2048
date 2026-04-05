@@ -7,53 +7,53 @@
     android:viewportHeight="108">
 
     <!--
-        Numra Icon — Hero Tile
-        Viewport: 108x108. Safe zone: center 72x72 (18→90).
-        Tile: 44x44dp centered at (54,54) with 10dp radius.
-        Leaves 14dp margin inside safe zone on each side.
+        Numra Icon — Hero Tile (properly sized)
+        Viewport: 108x108. Center: 54,54.
+        Tile: 36x36dp → from (36,36) to (72,72)
+        Generous margin for circle/squircle masks.
     -->
 
     <!-- Main tile — gold-to-amber gradient -->
-    <path android:pathData="M32,32 h44 a10,10 0,0,1 10,10 v44 a10,10 0,0,1 -10,10 h-44 a10,10 0,0,1 -10,-10 v-44 a10,10 0,0,1 10,-10 z">
+    <path android:pathData="M44,36 L64,36 A8,8 0,0,1 72,44 L72,64 A8,8 0,0,1 64,72 L44,72 A8,8 0,0,1 36,64 L36,44 A8,8 0,0,1 44,36 Z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
-                android:startX="22"
-                android:startY="32"
-                android:endX="86"
-                android:endY="96">
+                android:startX="36"
+                android:startY="36"
+                android:endX="72"
+                android:endY="72">
                 <item android:color="#FFF9D872" android:offset="0.0" />
                 <item android:color="#FFEE9A30" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Glass frost — top 30% of tile -->
-    <path android:pathData="M32,32 h44 a10,10 0,0,1 10,10 v10 h-64 v-10 a10,10 0,0,1 10,-10 z">
+    <!-- Glass frost — top portion -->
+    <path android:pathData="M44,36 L64,36 A8,8 0,0,1 72,44 L72,48 L36,48 L36,44 A8,8 0,0,1 44,36 Z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
                 android:startX="54"
-                android:startY="32"
+                android:startY="36"
                 android:endX="54"
-                android:endY="52">
-                <item android:color="#30FFFFFF" android:offset="0.0" />
+                android:endY="48">
+                <item android:color="#2AFFFFFF" android:offset="0.0" />
                 <item android:color="#00FFFFFF" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
     <!-- Bottom shadow -->
-    <path android:pathData="M22,78 h64 v8 a10,10 0,0,1 -10,10 h-44 a10,10 0,0,1 -10,-10 z">
+    <path android:pathData="M36,64 L72,64 L72,64 A8,8 0,0,1 64,72 L44,72 A8,8 0,0,1 36,64 Z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
                 android:startX="54"
-                android:startY="78"
+                android:startY="64"
                 android:endX="54"
-                android:endY="96">
+                android:endY="72">
                 <item android:color="#00000000" android:offset="0.0" />
-                <item android:color="#18000000" android:offset="1.0" />
+                <item android:color="#15000000" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
