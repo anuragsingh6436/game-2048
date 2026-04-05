@@ -5,6 +5,7 @@ data class GameState(
     val tiles: List<Tile> = emptyList(),
     val score: Int = 0,
     val bestScore: Int = 0,
+    val scoreGained: Int = 0,
     val isGameOver: Boolean = false,
     val hasWon: Boolean = false,
     val moveCount: Int = 0

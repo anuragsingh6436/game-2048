@@ -1,0 +1,63 @@
+package com.example.game_2048.presentation.components
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.game_2048.ui.theme.AccentGold
+import kotlinx.coroutines.launch
+
+@Composable
+fun ScorePopup(
+    scoreGained: Int,
+    moveCount: Int,
+    modifier: Modifier = Modifier
+) {
+    if (scoreGained <= 0) return
+
+    // Re-create animation on every move
+    val alpha = remember(moveCount) { Animatable(1f) }
+    val offsetY = remember(moveCount) { Animatable(0f) }
+
+    LaunchedEffect(moveCount) {
+        launch {
+            offsetY.animateTo(
+                targetValue = -40f,
+                animationSpec = tween(700, easing = FastOutSlowInEasing)
+            )
+        }
+        launch {
+            alpha.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(700, delayMillis = 200)
+            )
+        }
+    }
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "+$scoreGained",
+            color = AccentGold,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = (-0.3).sp,
+            modifier = Modifier
+                .offset(y = offsetY.value.dp)
+                .graphicsLayer { this.alpha = alpha.value }
+        )
+    }
+}

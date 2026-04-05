@@ -49,6 +49,7 @@ class GameEngine @Inject constructor() {
             tiles = tiles,
             score = newScore,
             bestScore = bestScore,
+            scoreGained = result.scoreGained,
             isGameOver = isGameOver,
             hasWon = hasWon,
             moveCount = state.moveCount + 1
@@ -119,7 +120,6 @@ class GameEngine @Inject constructor() {
             }
         }
 
-        // Pad with zeros
         while (merged.size < GRID_SIZE) {
             merged.add(0)
         }
@@ -155,27 +155,21 @@ class GameEngine @Inject constructor() {
     }
 
     fun canMove(grid: List<List<Int>>): Boolean {
-        // Check for empty cells
         for (r in grid.indices) {
             for (c in grid[r].indices) {
                 if (grid[r][c] == 0) return true
             }
         }
-
-        // Check for adjacent equal cells horizontally
         for (r in grid.indices) {
             for (c in 0 until GRID_SIZE - 1) {
                 if (grid[r][c] == grid[r][c + 1]) return true
             }
         }
-
-        // Check for adjacent equal cells vertically
         for (r in 0 until GRID_SIZE - 1) {
             for (c in grid[r].indices) {
                 if (grid[r][c] == grid[r + 1][c]) return true
             }
         }
-
         return false
     }
 
@@ -185,33 +179,139 @@ class GameEngine @Inject constructor() {
         return grid.sumOf { row -> row.count { it == 0 } }
     }
 
+    // ─── Tracked merge for slide animation ──────────────────────────
+
+    private data class TrackedCell(
+        val value: Int,
+        val sourceIndex: Int,
+        val isMerged: Boolean
+    )
+
+    private data class TileSource(
+        val sourceRow: Int,
+        val sourceCol: Int,
+        val isMerged: Boolean
+    )
+
+    private fun mergeLineTracked(line: List<Int>): List<TrackedCell> {
+        val filtered = line.mapIndexedNotNull { i, v ->
+            if (v != 0) Pair(i, v) else null
+        }
+        val result = mutableListOf<TrackedCell>()
+        var i = 0
+
+        while (i < filtered.size) {
+            if (i + 1 < filtered.size && filtered[i].second == filtered[i + 1].second) {
+                val merged = filtered[i].second * 2
+                result.add(TrackedCell(merged, filtered[i].first, true))
+                i += 2
+            } else {
+                result.add(TrackedCell(filtered[i].second, filtered[i].first, false))
+                i++
+            }
+        }
+
+        while (result.size < GRID_SIZE) {
+            result.add(TrackedCell(0, -1, false))
+        }
+        return result
+    }
+
+    private fun computeSourcePositions(
+        oldGrid: List<List<Int>>,
+        direction: Direction
+    ): Map<Pair<Int, Int>, TileSource> {
+        val sources = mutableMapOf<Pair<Int, Int>, TileSource>()
+
+        when (direction) {
+            Direction.LEFT -> {
+                for (r in oldGrid.indices) {
+                    val tracked = mergeLineTracked(oldGrid[r])
+                    for ((destCol, cell) in tracked.withIndex()) {
+                        if (cell.value != 0) {
+                            sources[Pair(r, destCol)] =
+                                TileSource(r, cell.sourceIndex, cell.isMerged)
+                        }
+                    }
+                }
+            }
+            Direction.RIGHT -> {
+                for (r in oldGrid.indices) {
+                    val tracked = mergeLineTracked(oldGrid[r].reversed())
+                    for ((i, cell) in tracked.withIndex()) {
+                        val destCol = GRID_SIZE - 1 - i
+                        if (cell.value != 0) {
+                            val sourceCol = GRID_SIZE - 1 - cell.sourceIndex
+                            sources[Pair(r, destCol)] =
+                                TileSource(r, sourceCol, cell.isMerged)
+                        }
+                    }
+                }
+            }
+            Direction.UP -> {
+                val transposed = transpose(oldGrid)
+                for (c in transposed.indices) {
+                    val tracked = mergeLineTracked(transposed[c])
+                    for ((destRow, cell) in tracked.withIndex()) {
+                        if (cell.value != 0) {
+                            sources[Pair(destRow, c)] =
+                                TileSource(cell.sourceIndex, c, cell.isMerged)
+                        }
+                    }
+                }
+            }
+            Direction.DOWN -> {
+                val transposed = transpose(oldGrid)
+                for (c in transposed.indices) {
+                    val tracked = mergeLineTracked(transposed[c].reversed())
+                    for ((i, cell) in tracked.withIndex()) {
+                        val destRow = GRID_SIZE - 1 - i
+                        if (cell.value != 0) {
+                            val sourceRow = GRID_SIZE - 1 - cell.sourceIndex
+                            sources[Pair(destRow, c)] =
+                                TileSource(sourceRow, c, cell.isMerged)
+                        }
+                    }
+                }
+            }
+        }
+
+        return sources
+    }
+
+    // ─── Tile building ──────────────────────────────────────────────
+
     private fun buildTilesFromMove(
         oldGrid: List<List<Int>>,
         newGridWithNewTile: List<List<Int>>,
         direction: Direction,
         newGridBeforeNewTile: List<List<Int>>
     ): List<Tile> {
+        val sources = computeSourcePositions(oldGrid, direction)
         val tiles = mutableListOf<Tile>()
 
-        // Tiles that existed in the moved grid (before adding new random tile)
+        // Moved / merged tiles
         for (r in newGridBeforeNewTile.indices) {
             for (c in newGridBeforeNewTile[r].indices) {
                 val value = newGridBeforeNewTile[r][c]
                 if (value != 0) {
+                    val source = sources[Pair(r, c)]
                     tiles.add(
                         Tile(
                             id = nextId(),
                             value = value,
                             row = r,
                             col = c,
-                            mergedFrom = isMergedTile(oldGrid, newGridBeforeNewTile, r, c, direction)
+                            previousRow = source?.sourceRow ?: r,
+                            previousCol = source?.sourceCol ?: c,
+                            mergedFrom = source?.isMerged ?: false
                         )
                     )
                 }
             }
         }
 
-        // Find the newly added tile (in newGridWithNewTile but not in newGridBeforeNewTile)
+        // Newly spawned tile
         for (r in newGridWithNewTile.indices) {
             for (c in newGridWithNewTile[r].indices) {
                 if (newGridWithNewTile[r][c] != 0 && newGridBeforeNewTile[r][c] == 0) {
@@ -229,23 +329,6 @@ class GameEngine @Inject constructor() {
         }
 
         return tiles
-    }
-
-    private fun isMergedTile(
-        oldGrid: List<List<Int>>,
-        newGrid: List<List<Int>>,
-        row: Int,
-        col: Int,
-        direction: Direction
-    ): Boolean {
-        val newValue = newGrid[row][col]
-        if (newValue <= 2) return false
-
-        // A tile is merged if its value is double of any contributing tile
-        // Simple heuristic: check if this value didn't exist at this position before
-        // and is a power-of-2 that could result from merging
-        val oldValue = oldGrid[row][col]
-        return oldValue != newValue && oldValue == newValue / 2
     }
 
     private fun gridToTiles(grid: List<List<Int>>, isNew: Boolean = false): List<Tile> {

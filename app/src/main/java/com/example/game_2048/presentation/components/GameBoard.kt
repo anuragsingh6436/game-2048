@@ -1,5 +1,8 @@
 package com.example.game_2048.presentation.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -10,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -21,11 +26,14 @@ import com.example.game_2048.domain.model.GameState
 import com.example.game_2048.domain.model.GameState.Companion.GRID_SIZE
 import com.example.game_2048.domain.model.Tile
 import com.example.game_2048.ui.theme.LocalGameColors
+import kotlinx.coroutines.launch
 
 private val BoardShape = RoundedCornerShape(14.dp)
 private val CellShape = RoundedCornerShape(10.dp)
 private val BOARD_PADDING = 10.dp
 private val CELL_SPACING = 8.dp
+
+private const val SLIDE_DURATION_MS = 100
 
 @Composable
 fun GameBoard(
@@ -90,18 +98,54 @@ private fun TilesOverlay(tiles: List<Tile>) {
     ) {
         val totalSpacing = CELL_SPACING * (GRID_SIZE - 1)
         val cellSize = (maxWidth - totalSpacing) / GRID_SIZE
+        val step = cellSize + CELL_SPACING
 
         tiles.forEach { tile ->
             key(tile.id) {
-                Box(
-                    modifier = Modifier.offset(
-                        x = (cellSize + CELL_SPACING) * tile.col,
-                        y = (cellSize + CELL_SPACING) * tile.row
-                    )
-                ) {
-                    TileView(tile = tile, cellSize = cellSize)
-                }
+                AnimatedTile(tile = tile, cellSize = cellSize, step = step)
             }
         }
+    }
+}
+
+@Composable
+private fun AnimatedTile(
+    tile: Tile,
+    cellSize: Dp,
+    step: Dp
+) {
+    // Animate column and row indices as floats
+    // New tiles start at their current position (no slide)
+    // Moved tiles start at their previous position and slide to current
+    val startCol = if (tile.isNew) tile.col.toFloat() else tile.previousCol.toFloat()
+    val startRow = if (tile.isNew) tile.row.toFloat() else tile.previousRow.toFloat()
+
+    val animCol = remember(tile.id) { Animatable(startCol) }
+    val animRow = remember(tile.id) { Animatable(startRow) }
+
+    LaunchedEffect(tile.id) {
+        if (!tile.isNew && (tile.previousCol != tile.col || tile.previousRow != tile.row)) {
+            launch {
+                animCol.animateTo(
+                    tile.col.toFloat(),
+                    tween(SLIDE_DURATION_MS, easing = FastOutSlowInEasing)
+                )
+            }
+            launch {
+                animRow.animateTo(
+                    tile.row.toFloat(),
+                    tween(SLIDE_DURATION_MS, easing = FastOutSlowInEasing)
+                )
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier.offset(
+            x = step * animCol.value,
+            y = step * animRow.value
+        )
+    ) {
+        TileView(tile = tile, cellSize = cellSize)
     }
 }

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.example.game_2048.domain.model.Tile
 import com.example.game_2048.ui.theme.LocalGameColors
 import com.example.game_2048.ui.theme.TileColors
+import kotlinx.coroutines.delay
 
 private val TileShape = RoundedCornerShape(10.dp)
 
@@ -40,18 +41,20 @@ fun TileView(
     val textColor = TileColors.getTextColor(tile.value, gameColors.isDark)
     val fontSize = TileColors.getFontSize(tile.value)
 
-    // Appear animation — gentle scale from 0
+    // Appear: scale from 0 → 1
     val appearScale = remember(tile.id) {
         Animatable(if (tile.isNew) 0f else 1f)
     }
 
-    // Merge animation — subtle pop from 1.15
+    // Merge pop: scale from 1.2 → 1 (starts after slide finishes)
     val mergeScale = remember(tile.id) {
-        Animatable(if (tile.mergedFrom) 1.15f else 1f)
+        Animatable(1f)
     }
 
     LaunchedEffect(tile.id) {
         if (tile.isNew) {
+            // Small delay so the new tile appears after other tiles finish sliding
+            delay(80)
             appearScale.animateTo(
                 targetValue = 1f,
                 animationSpec = spring(
@@ -64,17 +67,19 @@ fun TileView(
 
     LaunchedEffect(tile.id) {
         if (tile.mergedFrom) {
+            // Wait for slide to finish, then pop
+            delay(100)
+            mergeScale.snapTo(1.2f)
             mergeScale.animateTo(
                 targetValue = 1f,
                 animationSpec = spring(
-                    dampingRatio = 0.55f,
+                    dampingRatio = 0.5f,
                     stiffness = Spring.StiffnessMediumLow
                 )
             )
         }
     }
 
-    // Value-proportional elevation: higher tiles feel more prominent
     val elevation = when {
         tile.value >= 2048 -> 10.dp
         tile.value >= 512 -> 6.dp
@@ -83,7 +88,6 @@ fun TileView(
         else -> 0.dp
     }
 
-    // Subtle top highlight for depth
     val highlightBrush = Brush.verticalGradient(
         colors = listOf(
             Color.White.copy(alpha = if (gameColors.isDark) 0.06f else 0.15f),
@@ -97,9 +101,9 @@ fun TileView(
         modifier = modifier
             .size(cellSize)
             .graphicsLayer {
-                val combinedScale = appearScale.value * mergeScale.value
-                scaleX = combinedScale
-                scaleY = combinedScale
+                val s = appearScale.value * mergeScale.value
+                scaleX = s
+                scaleY = s
             }
             .shadow(
                 elevation = elevation,
@@ -111,7 +115,6 @@ fun TileView(
             .background(bgColor),
         contentAlignment = Alignment.Center
     ) {
-        // Inner highlight layer
         Box(
             modifier = Modifier
                 .matchParentSize()

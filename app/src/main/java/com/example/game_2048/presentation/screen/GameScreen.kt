@@ -1,9 +1,14 @@
 package com.example.game_2048.presentation.screen
 
 import android.view.HapticFeedbackConstants
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +21,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
@@ -24,6 +28,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -33,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +49,7 @@ import com.example.game_2048.presentation.GameViewModel
 import com.example.game_2048.presentation.components.GameBoard
 import com.example.game_2048.presentation.components.GameOverOverlay
 import com.example.game_2048.presentation.components.ScoreCard
+import com.example.game_2048.presentation.components.ScorePopup
 import com.example.game_2048.ui.theme.LocalGameColors
 import kotlin.math.abs
 
@@ -57,6 +64,20 @@ fun GameScreen(
 
     var totalDragX by remember { mutableFloatStateOf(0f) }
     var totalDragY by remember { mutableFloatStateOf(0f) }
+
+    // Haptic on game over
+    LaunchedEffect(gameState.isGameOver) {
+        if (gameState.isGameOver) {
+            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        }
+    }
+
+    // Haptic on win
+    LaunchedEffect(gameState.hasWon) {
+        if (gameState.hasWon) {
+            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -73,15 +94,23 @@ fun GameScreen(
         Header(
             score = gameState.score,
             bestScore = gameState.bestScore,
+            scoreGained = gameState.scoreGained,
+            moveCount = gameState.moveCount,
             canUndo = viewModel.canUndo(),
             showUndoButton = viewModel.featureFlags.isUndoEnabled(),
-            onRestart = { viewModel.startNewGame() },
-            onUndo = { viewModel.undoMove() }
+            onRestart = {
+                view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                viewModel.startNewGame()
+            },
+            onUndo = {
+                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                viewModel.undoMove()
+            }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── Board ───────────────────────────────────────────────
+        // ── Board with swipe gestures ───────────────────────────
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -97,7 +126,7 @@ fun GameScreen(
                             totalDragY += dragAmount.y
                         },
                         onDragEnd = {
-                            val threshold = 50f
+                            val threshold = 40f
                             val absX = abs(totalDragX)
                             val absY = abs(totalDragY)
 
@@ -109,12 +138,23 @@ fun GameScreen(
                                 }
 
                                 val prevScore = gameState.score
+                                val prevMoveCount = gameState.moveCount
                                 viewModel.onSwipe(direction)
 
-                                if (viewModel.gameState.value.score > prevScore) {
-                                    view.performHapticFeedback(
-                                        HapticFeedbackConstants.VIRTUAL_KEY
-                                    )
+                                val moved =
+                                    viewModel.gameState.value.moveCount > prevMoveCount
+                                if (moved) {
+                                    if (viewModel.gameState.value.score > prevScore) {
+                                        // Merge happened — medium haptic
+                                        view.performHapticFeedback(
+                                            HapticFeedbackConstants.VIRTUAL_KEY
+                                        )
+                                    } else {
+                                        // Moved without merge — light tick
+                                        view.performHapticFeedback(
+                                            HapticFeedbackConstants.CLOCK_TICK
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -127,13 +167,15 @@ fun GameScreen(
                 isGameOver = gameState.isGameOver,
                 hasWon = gameState.hasWon && !gameState.isGameOver,
                 score = gameState.score,
-                onRestart = { viewModel.startNewGame() }
+                onRestart = {
+                    view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                    viewModel.startNewGame()
+                }
             )
         }
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // ── Footer hint ─────────────────────────────────────────
         Text(
             text = "Join the numbers and get to 2048",
             color = gameColors.textSecondary,
@@ -144,7 +186,6 @@ fun GameScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // ── Move counter ────────────────────────────────────────
         if (gameState.moveCount > 0) {
             Text(
                 text = "${gameState.moveCount} moves",
@@ -164,6 +205,8 @@ fun GameScreen(
 private fun Header(
     score: Int,
     bestScore: Int,
+    scoreGained: Int,
+    moveCount: Int,
     canUndo: Boolean,
     showUndoButton: Boolean,
     onRestart: () -> Unit,
@@ -171,7 +214,6 @@ private fun Header(
 ) {
     val gameColors = LocalGameColors.current
 
-    // Row 1: Title + Scores
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -187,14 +229,20 @@ private fun Header(
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScoreCard(label = "SCORE", score = score)
+            Box {
+                ScoreCard(label = "SCORE", score = score)
+                ScorePopup(
+                    scoreGained = scoreGained,
+                    moveCount = moveCount,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
+            }
             ScoreCard(label = "BEST", score = bestScore)
         }
     }
 
     Spacer(modifier = Modifier.height(14.dp))
 
-    // Row 2: Subtitle + Actions
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -209,70 +257,107 @@ private fun Header(
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (showUndoButton) {
-                IconActionButton(
-                    icon = {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Undo,
-                            contentDescription = "Undo",
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    },
-                    enabled = canUndo,
+                PressableButton(
                     onClick = onUndo,
-                    backgroundColor = gameColors.restartButton
-                )
+                    enabled = canUndo,
+                    backgroundColor = gameColors.restartButton,
+                    contentPadding = PressableButtonPadding.Icon
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Undo,
+                        contentDescription = "Undo",
+                        tint = Color.White.copy(alpha = if (canUndo) 1f else 0.5f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
 
-            ActionButton(
-                text = "New Game",
+            PressableButton(
                 onClick = onRestart,
                 backgroundColor = gameColors.restartButton
-            )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = "New Game",
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
     }
 }
 
-// ─── Buttons ─────────────────────────────────────────────────────────
+// ─── Pressable Button ────────────────────────────────────────────────
 
-@Composable
-private fun ActionButton(
-    text: String,
-    onClick: () -> Unit,
-    backgroundColor: Color
-) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = Color.White,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-    }
+private enum class PressableButtonPadding {
+    Default, Icon
 }
 
 @Composable
-private fun IconActionButton(
-    icon: @Composable () -> Unit,
+private fun PressableButton(
     onClick: () -> Unit,
     backgroundColor: Color,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    contentPadding: PressableButtonPadding = PressableButtonPadding.Default,
+    content: @Composable () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val pressScale = remember { Animatable(1f) }
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            pressScale.animateTo(
+                0.92f,
+                spring(stiffness = Spring.StiffnessMediumLow)
+            )
+        } else {
+            pressScale.animateTo(
+                1f,
+                spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        }
+    }
+
+    val padding = when (contentPadding) {
+        PressableButtonPadding.Default -> Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+        PressableButtonPadding.Icon -> Modifier.padding(10.dp)
+    }
+
     Box(
         modifier = Modifier
+            .graphicsLayer {
+                scaleX = pressScale.value
+                scaleY = pressScale.value
+            }
             .clip(RoundedCornerShape(8.dp))
-            .background(if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.35f))
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(10.dp),
+            .background(
+                if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.35f)
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick
+            )
+            .then(padding),
         contentAlignment = Alignment.Center
     ) {
-        icon()
+        content()
     }
 }
