@@ -4,6 +4,7 @@ import android.view.HapticFeedbackConstants
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -37,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -52,6 +55,7 @@ import com.example.game_2048.presentation.components.ScoreCard
 import com.example.game_2048.presentation.components.ScorePopup
 import com.example.game_2048.ui.theme.LocalGameColors
 import kotlin.math.abs
+import kotlin.math.min
 
 @Composable
 fun GameScreen(
@@ -79,15 +83,23 @@ fun GameScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(gameColors.background)
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // ── Layer 0: Ambient gradient blobs ──────────────────────
+        AmbientBackground()
+
+        // ── Layer 1: Content ─────────────────────────────────────
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // ── Header ──────────────────────────────────────────────
@@ -196,6 +208,49 @@ fun GameScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
         }
+        } // Column
+    } // Box
+}
+
+// ─── Ambient Background ──────────────────────────────────────────────
+
+@Composable
+private fun AmbientBackground() {
+    val gameColors = LocalGameColors.current
+    val glowAlpha = if (gameColors.isDark) 0.35f else 0.45f
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+        val radius = min(w, h) * 0.55f
+
+        // Top-right warm/cool blob
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    gameColors.glowTopRight.copy(alpha = glowAlpha),
+                    Color.Transparent
+                ),
+                center = Offset(w * 0.85f, h * 0.08f),
+                radius = radius
+            ),
+            radius = radius,
+            center = Offset(w * 0.85f, h * 0.08f)
+        )
+
+        // Bottom-left warm/cool blob
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    gameColors.glowBottomLeft.copy(alpha = glowAlpha * 0.7f),
+                    Color.Transparent
+                ),
+                center = Offset(w * 0.1f, h * 0.85f),
+                radius = radius * 0.9f
+            ),
+            radius = radius * 0.9f,
+            center = Offset(w * 0.1f, h * 0.85f)
+        )
     }
 }
 

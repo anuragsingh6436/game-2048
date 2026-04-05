@@ -29,6 +29,9 @@ data class GameColors(
     val scoreValue: Color,
     val restartButton: Color,
     val overlayScrim: Color,
+    val glowTopRight: Color,
+    val glowBottomLeft: Color,
+    val glowBoard: Color,
     val isDark: Boolean
 )
 
@@ -45,6 +48,9 @@ val LocalGameColors = compositionLocalOf {
         scoreValue = Color.White,
         restartButton = RestartButtonLight,
         overlayScrim = Color.White.copy(alpha = 0.78f),
+        glowTopRight = GlowTopRightLight,
+        glowBottomLeft = GlowBottomLeftLight,
+        glowBoard = GlowBoardLight,
         isDark = false
     )
 }
@@ -91,6 +97,9 @@ fun Game2048Theme(
             scoreValue = Color(0xFFF0EDE8),
             restartButton = RestartButtonDark,
             overlayScrim = Color(0xFF0A0A0E).copy(alpha = 0.82f),
+            glowTopRight = GlowTopRightDark,
+            glowBottomLeft = GlowBottomLeftDark,
+            glowBoard = GlowBoardDark,
             isDark = true
         )
     } else {
@@ -106,6 +115,9 @@ fun Game2048Theme(
             scoreValue = Color.White,
             restartButton = RestartButtonLight,
             overlayScrim = Color.White.copy(alpha = 0.78f),
+            glowTopRight = GlowTopRightLight,
+            glowBottomLeft = GlowBottomLeftLight,
+            glowBoard = GlowBoardLight,
             isDark = false
         )
     }

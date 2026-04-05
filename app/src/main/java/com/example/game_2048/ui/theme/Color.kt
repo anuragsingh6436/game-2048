@@ -35,6 +35,17 @@ val AccentGold = Color(0xFFF2C94C)
 val AccentOrange = Color(0xFFED8A5A)
 val AccentWin = Color(0xFFF5D96E)              // celebratory gold
 
+// ─── Ambient Glow (background depth) ─────────────────────────────
+// Light mode: warm peach/gold blobs
+val GlowTopRightLight = Color(0xFFF5DEB3)     // soft wheat
+val GlowBottomLeftLight = Color(0xFFE8C9A0)   // warm sand
+val GlowBoardLight = Color(0xFFC8B8A6)        // board-matching halo
+
+// Dark mode: cool muted blobs
+val GlowTopRightDark = Color(0xFF2A2540)       // deep plum
+val GlowBottomLeftDark = Color(0xFF1E2838)     // slate blue
+val GlowBoardDark = Color(0xFF1E1E2C)         // board-matching halo
+
 // ─── Tile Colors ──────────────────────────────────────────────────
 object TileColors {
 

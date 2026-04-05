@@ -3,6 +3,7 @@ package com.example.game_2048.presentation.components
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -16,9 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -27,6 +31,7 @@ import com.example.game_2048.domain.model.GameState.Companion.GRID_SIZE
 import com.example.game_2048.domain.model.Tile
 import com.example.game_2048.ui.theme.LocalGameColors
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
 private val BoardShape = RoundedCornerShape(14.dp)
 private val CellShape = RoundedCornerShape(10.dp)
@@ -43,22 +48,61 @@ fun GameBoard(
     val gameColors = LocalGameColors.current
 
     Box(
-        modifier = modifier
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        // Ambient glow behind the board
+        BoardGlow(glowColor = gameColors.glowBoard)
+
+        // The board itself
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = BoardShape,
+                    ambientColor = Color.Black.copy(alpha = 0.08f),
+                    spotColor = Color.Black.copy(alpha = 0.06f)
+                )
+                .clip(BoardShape)
+                .background(gameColors.boardBackground)
+                .padding(BOARD_PADDING)
+        ) {
+            EmptyCellsGrid(emptyColor = gameColors.emptyCell)
+
+            TilesOverlay(tiles = state.tiles)
+        }
+    }
+}
+
+@Composable
+private fun BoardGlow(glowColor: Color) {
+    val gameColors = LocalGameColors.current
+    val alpha = if (gameColors.isDark) 0.25f else 0.35f
+
+    Canvas(
+        modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .shadow(
-                elevation = 4.dp,
-                shape = BoardShape,
-                ambientColor = Color.Black.copy(alpha = 0.08f),
-                spotColor = Color.Black.copy(alpha = 0.06f)
-            )
-            .clip(BoardShape)
-            .background(gameColors.boardBackground)
-            .padding(BOARD_PADDING)
     ) {
-        EmptyCellsGrid(emptyColor = gameColors.emptyCell)
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val radius = min(size.width, size.height) * 0.58f
 
-        TilesOverlay(tiles = state.tiles)
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    glowColor.copy(alpha = alpha),
+                    glowColor.copy(alpha = alpha * 0.3f),
+                    Color.Transparent
+                ),
+                center = Offset(cx, cy),
+                radius = radius
+            ),
+            radius = radius,
+            center = Offset(cx, cy)
+        )
     }
 }
 
