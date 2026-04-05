@@ -7,69 +7,55 @@
     android:viewportHeight="108">
 
     <!--
-        Numra Icon — Concept 1: Hero Tile
-        Single gold rounded square = the 2048 tile everyone chases.
-        Safe zone: 24→84 (60x60). Tile: 50x50 centered with 10dp radius.
+        Numra Icon — Hero Tile
+        Viewport: 108x108. Safe zone: center 72x72 (18→90).
+        Tile: 44x44dp centered at (54,54) with 10dp radius.
+        Leaves 14dp margin inside safe zone on each side.
     -->
 
-    <!-- Main tile — rich gold-to-amber gradient -->
-    <path android:pathData="M34,29 h40 a10,10 0,0,1 10,10 v40 a10,10 0,0,1 -10,10 h-40 a10,10 0,0,1 -10,-10 v-40 a10,10 0,0,1 10,-10 z">
+    <!-- Main tile — gold-to-amber gradient -->
+    <path android:pathData="M32,32 h44 a10,10 0,0,1 10,10 v44 a10,10 0,0,1 -10,10 h-44 a10,10 0,0,1 -10,-10 v-44 a10,10 0,0,1 10,-10 z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
-                android:startX="24"
-                android:startY="29"
-                android:endX="84"
-                android:endY="89">
+                android:startX="22"
+                android:startY="32"
+                android:endX="86"
+                android:endY="96">
                 <item android:color="#FFF9D872" android:offset="0.0" />
                 <item android:color="#FFEE9A30" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Glass frost highlight — top 35% of tile -->
-    <path android:pathData="M34,29 h40 a10,10 0,0,1 10,10 v12 h-60 v-12 a10,10 0,0,1 10,-10 z">
+    <!-- Glass frost — top 30% of tile -->
+    <path android:pathData="M32,32 h44 a10,10 0,0,1 10,10 v10 h-64 v-10 a10,10 0,0,1 10,-10 z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
                 android:startX="54"
-                android:startY="29"
+                android:startY="32"
                 android:endX="54"
-                android:endY="51">
+                android:endY="52">
                 <item android:color="#30FFFFFF" android:offset="0.0" />
                 <item android:color="#00FFFFFF" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- Bottom shadow — subtle depth at base of tile -->
-    <path android:pathData="M24,71 h60 v8 a10,10 0,0,1 -10,10 h-40 a10,10 0,0,1 -10,-10 z">
+    <!-- Bottom shadow -->
+    <path android:pathData="M22,78 h64 v8 a10,10 0,0,1 -10,10 h-44 a10,10 0,0,1 -10,-10 z">
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
                 android:startX="54"
-                android:startY="71"
+                android:startY="78"
                 android:endX="54"
-                android:endY="89">
+                android:endY="96">
                 <item android:color="#00000000" android:offset="0.0" />
                 <item android:color="#18000000" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
-
-    <!-- Faint 2x2 grid lines — whisper of the game board -->
-    <!-- Vertical center line -->
-    <path
-        android:pathData="M54,33 L54,85"
-        android:strokeWidth="0.6"
-        android:strokeColor="#0CFFFFFF"
-        android:fillColor="#00000000" />
-
-    <!-- Horizontal center line -->
-    <path
-        android:pathData="M28,59 L80,59"
-        android:strokeWidth="0.6"
-        android:strokeColor="#0CFFFFFF"
-        android:fillColor="#00000000" />
 
 </vector>

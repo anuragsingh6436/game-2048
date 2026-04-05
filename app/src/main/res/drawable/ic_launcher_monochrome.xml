@@ -5,9 +5,7 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Monochrome: single tile with faint grid — same silhouette -->
-
-    <path android:pathData="M34,29 h40 a10,10 0,0,1 10,10 v40 a10,10 0,0,1 -10,10 h-40 a10,10 0,0,1 -10,-10 v-40 a10,10 0,0,1 10,-10 z"
+    <path android:pathData="M32,32 h44 a10,10 0,0,1 10,10 v44 a10,10 0,0,1 -10,10 h-44 a10,10 0,0,1 -10,-10 v-44 a10,10 0,0,1 10,-10 z"
         android:fillColor="#FF000000" />
 
 </vector>
