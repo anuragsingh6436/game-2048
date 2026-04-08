@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.game_2048"
+    namespace = "com.bajrangi.game_2048"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.game_2048"
+        applicationId = "com.bajrangi.game_2048"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
