@@ -7,5 +7,6 @@ import javax.inject.Inject
 class StartNewGameUseCase @Inject constructor(
     private val engine: GameEngine
 ) {
-    operator fun invoke(): GameState = engine.createInitialState()
+    operator fun invoke(size: Int = GameState.DEFAULT_SIZE): GameState =
+        engine.createInitialState(size = size)
 }

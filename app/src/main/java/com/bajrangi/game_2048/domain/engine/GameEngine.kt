@@ -2,7 +2,6 @@ package com.bajrangi.game_2048.domain.engine
 
 import com.bajrangi.game_2048.domain.model.Direction
 import com.bajrangi.game_2048.domain.model.GameState
-import com.bajrangi.game_2048.domain.model.GameState.Companion.GRID_SIZE
 import com.bajrangi.game_2048.domain.model.Tile
 import javax.inject.Inject
 import kotlin.random.Random
@@ -23,12 +22,38 @@ class GameEngine @Inject constructor() {
 
     private fun nextId(): Long = nextTileId++
 
-    fun createInitialState(random: Random = Random): GameState {
-        var grid = emptyGrid()
-        grid = addRandomTile(grid, random)
-        grid = addRandomTile(grid, random)
+    fun createInitialState(
+        size: Int = GameState.DEFAULT_SIZE,
+        random: Random = Random
+    ): GameState {
+        // Pool of powers-of-two weighted toward lower values so the board
+        // starts fully populated (like the reference screenshot) but still
+        // has guaranteed mergeable neighbours.
+        val pool = listOf(
+            2, 2, 2, 2, 2,
+            4, 4, 4, 4,
+            8, 8, 8,
+            16, 16, 16,
+            32, 32,
+            64, 64,
+            128,
+            256
+        )
+        // Fill ~65% of the cells so the board looks busy like a mid-game
+        // but still has empty slots for spawning and manoeuvring.
+        val total = size * size
+        val target = (total * 0.65f).toInt().coerceAtLeast(2)
+        var grid: List<List<Int>>
+        do {
+            val positions = (0 until total).shuffled(random).take(target).toSet()
+            grid = List(size) { r ->
+                List(size) { c ->
+                    if ((r * size + c) in positions) pool[random.nextInt(pool.size)] else 0
+                }
+            }
+        } while (!canMove(grid))
         val tiles = gridToTiles(grid, isNew = true)
-        return GameState(grid = grid, tiles = tiles)
+        return GameState(size = size, grid = grid, tiles = tiles)
     }
 
     fun move(state: GameState, direction: Direction, random: Random = Random): GameState {
@@ -119,7 +144,7 @@ class GameEngine @Inject constructor() {
             }
         }
 
-        while (merged.size < GRID_SIZE) {
+        while (merged.size < line.size) {
             merged.add(0)
         }
 
@@ -127,8 +152,9 @@ class GameEngine @Inject constructor() {
     }
 
     fun transpose(grid: List<List<Int>>): List<List<Int>> {
-        return List(GRID_SIZE) { row ->
-            List(GRID_SIZE) { col ->
+        val n = grid.size
+        return List(n) { row ->
+            List(n) { col ->
                 grid[col][row]
             }
         }
@@ -154,17 +180,18 @@ class GameEngine @Inject constructor() {
     }
 
     fun canMove(grid: List<List<Int>>): Boolean {
+        val n = grid.size
         for (r in grid.indices) {
             for (c in grid[r].indices) {
                 if (grid[r][c] == 0) return true
             }
         }
         for (r in grid.indices) {
-            for (c in 0 until GRID_SIZE - 1) {
+            for (c in 0 until n - 1) {
                 if (grid[r][c] == grid[r][c + 1]) return true
             }
         }
-        for (r in 0 until GRID_SIZE - 1) {
+        for (r in 0 until n - 1) {
             for (c in grid[r].indices) {
                 if (grid[r][c] == grid[r + 1][c]) return true
             }
@@ -172,7 +199,8 @@ class GameEngine @Inject constructor() {
         return false
     }
 
-    fun emptyGrid(): List<List<Int>> = List(GRID_SIZE) { List(GRID_SIZE) { 0 } }
+    fun emptyGrid(size: Int = GameState.DEFAULT_SIZE): List<List<Int>> =
+        List(size) { List(size) { 0 } }
 
     fun getEmptyCellCount(grid: List<List<Int>>): Int {
         return grid.sumOf { row -> row.count { it == 0 } }
@@ -210,7 +238,7 @@ class GameEngine @Inject constructor() {
             }
         }
 
-        while (result.size < GRID_SIZE) {
+        while (result.size < line.size) {
             result.add(TrackedCell(0, -1, false))
         }
         return result
@@ -221,6 +249,7 @@ class GameEngine @Inject constructor() {
         direction: Direction
     ): Map<Pair<Int, Int>, TileSource> {
         val sources = mutableMapOf<Pair<Int, Int>, TileSource>()
+        val n = oldGrid.size
 
         when (direction) {
             Direction.LEFT -> {
@@ -238,9 +267,9 @@ class GameEngine @Inject constructor() {
                 for (r in oldGrid.indices) {
                     val tracked = mergeLineTracked(oldGrid[r].reversed())
                     for ((i, cell) in tracked.withIndex()) {
-                        val destCol = GRID_SIZE - 1 - i
+                        val destCol = n - 1 - i
                         if (cell.value != 0) {
-                            val sourceCol = GRID_SIZE - 1 - cell.sourceIndex
+                            val sourceCol = n - 1 - cell.sourceIndex
                             sources[Pair(r, destCol)] =
                                 TileSource(r, sourceCol, cell.isMerged)
                         }
@@ -264,9 +293,9 @@ class GameEngine @Inject constructor() {
                 for (c in transposed.indices) {
                     val tracked = mergeLineTracked(transposed[c].reversed())
                     for ((i, cell) in tracked.withIndex()) {
-                        val destRow = GRID_SIZE - 1 - i
+                        val destRow = n - 1 - i
                         if (cell.value != 0) {
-                            val sourceRow = GRID_SIZE - 1 - cell.sourceIndex
+                            val sourceRow = n - 1 - cell.sourceIndex
                             sources[Pair(destRow, c)] =
                                 TileSource(sourceRow, c, cell.isMerged)
                         }

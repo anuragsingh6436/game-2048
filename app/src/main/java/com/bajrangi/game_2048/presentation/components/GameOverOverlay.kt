@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -77,7 +78,16 @@ fun GameOverOverlay(
                 ),
             contentAlignment = Alignment.Center
         ) {
+            GlassSurface(
+                isDark = gameColors.isDark,
+                cornerRadius = 28.dp,
+                elevation = 12.dp,
+                modifier = Modifier
+                    .widthIn(min = 260.dp)
+                    .padding(horizontal = 32.dp)
+            ) {
             Column(
+                modifier = Modifier.padding(horizontal = 32.dp, vertical = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -125,6 +135,7 @@ fun GameOverOverlay(
                         text = stringResource(R.string.try_again)
                     )
                 }
+            }
             }
         }
     }

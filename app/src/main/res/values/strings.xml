@@ -27,4 +27,39 @@
     <string name="cd_undo">Undo</string>
     <string name="cd_new_game">New Game</string>
     <string name="cd_theme">Toggle theme</string>
+    <string name="cd_settings">Settings</string>
+
+    <!-- Splash -->
+    <string name="splash_tagline">Join the numbers</string>
+    <string name="splash_tap_to_play">TAP TO PLAY</string>
+    <string name="splash_play">PLAY</string>
+
+    <!-- Board size picker -->
+    <string name="size_picker_title">CHOOSE BOARD SIZE</string>
+    <string name="size_4x4">4 × 4</string>
+    <string name="size_4x4_subtitle">Classic · reach 2048</string>
+    <string name="size_5x5">5 × 5</string>
+    <string name="size_5x5_subtitle">Roomier · more combos</string>
+    <string name="size_6x6">6 × 6</string>
+    <string name="size_6x6_subtitle">Marathon · long runs</string>
+
+    <!-- Settings -->
+    <string name="settings_title">SETTINGS</string>
+    <string name="settings_light_mode">Light mode</string>
+    <string name="settings_dark_mode">Dark mode</string>
+    <string name="settings_how_to_play">How to play</string>
+    <string name="settings_sound_on">Sound on</string>
+    <string name="settings_sound_off">Sound off</string>
+    <string name="cd_back">Back</string>
+
+    <!-- How to play -->
+    <string name="howto_title">How to play</string>
+    <string name="howto_goal">Combine matching tiles to reach 2048. Every swipe slides every tile.</string>
+    <string name="howto_sizes">Pick 4×4, 5×5, or 6×6 from the Play screen — bigger boards give you more room to plan.</string>
+    <string name="howto_start">Each game starts with the board already partly filled, so jump straight into merging.</string>
+    <string name="howto_swipe">Swipe in any direction to shift tiles.</string>
+    <string name="howto_merge">Two tiles with the same number merge into one and add up.</string>
+    <string name="howto_spawn">A new 2 or 4 appears after each move.</string>
+    <string name="howto_lose">The game ends when the board is full and no moves remain.</string>
+    <string name="howto_done">Got it</string>
 </resources>

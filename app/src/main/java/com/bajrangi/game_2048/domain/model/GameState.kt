@@ -4,7 +4,8 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 data class GameState(
-    val grid: List<List<Int>> = List(GRID_SIZE) { List(GRID_SIZE) { 0 } },
+    val size: Int = DEFAULT_SIZE,
+    val grid: List<List<Int>> = List(size) { List(size) { 0 } },
     val tiles: List<Tile> = emptyList(),
     val score: Int = 0,
     val bestScore: Int = 0,
@@ -17,6 +18,8 @@ data class GameState(
     val showWinOverlay: Boolean get() = hasWon && !winDismissed && !isGameOver
 
     companion object {
-        const val GRID_SIZE = 4
+        const val DEFAULT_SIZE = 4
+        // Kept for any legacy references.
+        const val GRID_SIZE = DEFAULT_SIZE
     }
 }

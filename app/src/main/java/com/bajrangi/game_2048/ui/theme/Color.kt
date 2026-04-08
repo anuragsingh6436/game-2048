@@ -3,11 +3,11 @@ package com.bajrangi.game_2048.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // ─── Light Palette ────────────────────────────────────────────────
-val LightBackground = Color(0xFFFBF8F1)       // warm off-white
+val LightBackground = Color(0xFFF4F6FB)       // cool off-white (ice tint)
 val LightSurface = Color(0xFFFFFFFF)
-val LightEmptyCell = Color(0xFFD6CDC4)         // muted warm grey
-val LightTextPrimary = Color(0xFF6E6356)       // soft charcoal-brown
-val LightTextSecondary = Color(0xFFA69C91)     // muted label
+val LightEmptyCell = Color(0xFFC7D1E0)         // cool slate — sits under jewel tiles
+val LightTextPrimary = Color(0xFF1C2446)       // deep navy (matches aurora core)
+val LightTextSecondary = Color(0xFF6672A0)     // muted cool indigo-gray
 val LightTextOnTile = Color(0xFFF9F6F2)        // white-ish for dark tiles
 
 // ─── Dark Palette ─────────────────────────────────────────────────
@@ -19,11 +19,11 @@ val DarkTextSecondary = Color(0xFF8A8690)       // muted label
 val DarkTextOnTile = Color(0xFFF9F6F2)
 
 // ─── Board ────────────────────────────────────────────────────────
-val BoardBackgroundLight = Color(0xFFC2B5A7)   // warm taupe
+val BoardBackgroundLight = Color(0xFFDDE4F0)   // cool ice-slate frame
 val BoardBackgroundDark = Color(0xFF252530)     // charcoal slate
 
 // ─── Board Glass ──────────────────────────────────────────────────
-val BoardGlassLight = Color(0xE0C2B5A7)        // taupe at 88% opacity
+val BoardGlassLight = Color(0xE6DDE4F0)        // ice-slate at 90% opacity
 val BoardGlassDark = Color(0xBF252530)          // charcoal at 75% opacity
 val BoardBorderLight = Color(0x1FFFFFFF)        // white at 12%
 val BoardBorderDark = Color(0x14FFFFFF)         // white at 8%
@@ -31,17 +31,17 @@ val BoardFrostLight = Color(0x0DFFFFFF)         // white at 5% (top highlight)
 val BoardFrostDark = Color(0x08FFFFFF)          // white at 3%
 
 // ─── Score Cards ──────────────────────────────────────────────────
-val ScoreCardLight = Color(0xFFC2B5A7)
+val ScoreCardLight = Color(0xFFE9EEF8)
 val ScoreCardDark = Color(0xFF2A2A36)
-val ScoreCardGlassLight = Color(0xDDC2B5A7)    // taupe at 87%
+val ScoreCardGlassLight = Color(0xEBE9EEF8)    // pale ice card at ~92%
 val ScoreCardGlassDark = Color(0xCC2A2A36)     // charcoal at 80%
-val ScoreCardBorderLight = Color(0x14FFFFFF)    // white at 8%
+val ScoreCardBorderLight = Color(0x331C2446)    // deep navy at 20% (crisp edge)
 val ScoreCardBorderDark = Color(0x0FFFFFFF)     // white at 6%
 
 // ─── Score Labels & Values ────────────────────────────────────────
-val ScoreLabelLight = Color(0xA6EEE4DA)        // warm cream at 65%
+val ScoreLabelLight = Color(0xCC1C2446)        // deep navy at 80% (readable label)
 val ScoreLabelDark = Color(0xFF9A96A0)         // muted lavender
-val ScoreValueLight = Color(0xFFFFFFFF)        // white
+val ScoreValueLight = Color(0xFF1C2446)        // deep navy solid
 val ScoreValueDark = Color(0xFFF0EDE8)         // warm white
 
 // ─── Buttons ──────────────────────────────────────────────────────
@@ -81,36 +81,67 @@ val GlowBoardDark = Color(0xFF1E1E2C)         // board-matching halo
 val VignetteLight = Color(0xFF8A7E70)          // warm shadow
 val VignetteDark = Color(0xFF000000)           // pure black edge
 
+// ─── Aurora chrome (ported from XOMaster) ────────────────────────
+// Vignette backdrop endpoints
+val AuroraVignetteCoreLight = Color(0xFFFAF8F5)
+val AuroraVignetteMidLight  = Color(0xFFEEF2F7)
+val AuroraVignetteEdgeLight = Color(0xFFDDE3EC)
+val AuroraVignetteCoreDark  = Color(0xFF1A1C4A)
+val AuroraVignetteMidDark   = Color(0xFF0B1230)
+val AuroraVignetteEdgeDark  = Color(0xFF03050E)
+
+// Ice-blue drifting orb
+val AuroraOrbLight = Color(0xFF7FD8FF)
+val AuroraOrbDark  = Color(0xFF7FD8FF)
+
+// Glass surface fills / borders / inner glow
+val AuroraGlassFillLight   = Color(0xD4FFF6EE)
+val AuroraGlassFillDark    = Color(0xB3121A36)
+val AuroraGlassBorderLight = Color(0x38FFFFFF)
+val AuroraGlassBorderDark  = Color(0x33A8C5FF)
+val AuroraGlassInnerLight  = Color(0x0DFFFFFF)
+val AuroraGlassInnerDark   = Color(0x0AFFFFFF)
+
+// Accent pill (new game / keep playing)
+val AuroraAccentLight = Color(0xFF2A8BC4) // ice-blue deep
+val AuroraAccentDark  = Color(0xFFE8B4A0) // rose-gold
+
 // ─── Tile Colors ──────────────────────────────────────────────────
 object TileColors {
 
-    // Light mode — classic warm progression
-    private val tile2L = Color(0xFFEEE4DA)
-    private val tile4L = Color(0xFFECDFC6)
-    private val tile8L = Color(0xFFF4B17A)
-    private val tile16L = Color(0xFFF59768)
-    private val tile32L = Color(0xFFF67E61)
-    private val tile64L = Color(0xFFF65D3B)
-    private val tile128L = Color(0xFFEDCF72)
-    private val tile256L = Color(0xFFEDCC61)
-    private val tile512L = Color(0xFFEDC850)
-    private val tile1024L = Color(0xFFEDC53F)
-    private val tile2048L = Color(0xFFEDC22E)
-    private val tileSuperL = Color(0xFF3C3A33)
+    // Vibrant jewel palette — inspired by top-rated 2048 apps.
+    // Each value gets its own distinct hue instead of a heat-gradient,
+    // so the board reads as a colorful mosaic on the deep-navy backdrop.
+    // Both light and dark modes share the saturated set; only the 2/4
+    // low tiles are softened slightly in light mode to reduce glare.
 
-    // Dark mode — lifted 2/4 for visibility, rich jewel-tone 8+
-    private val tile2D = Color(0xFF3E3E56)     // lightened from #38384C
-    private val tile4D = Color(0xFF4C4C6A)     // lightened from #434360
-    private val tile8D = Color(0xFFC47A3F)
-    private val tile16D = Color(0xFFD47240)
-    private val tile32D = Color(0xFFD65E3E)
-    private val tile64D = Color(0xFFDA4430)
-    private val tile128D = Color(0xFFDCB644)
-    private val tile256D = Color(0xFFDCB034)
-    private val tile512D = Color(0xFFDCAC26)
-    private val tile1024D = Color(0xFFDCA818)
-    private val tile2048D = Color(0xFFDCA40A)
-    private val tileSuperD = Color(0xFFF0DFA8)
+    // --- Dark mode (primary) ---
+    private val tile2D    = Color(0xFF31B6E8) // sky blue
+    private val tile4D    = Color(0xFFEE8B3A) // orange
+    private val tile8D    = Color(0xFFE84F8C) // hot pink
+    private val tile16D   = Color(0xFFB84E85) // magenta
+    private val tile32D   = Color(0xFFB93E4E) // crimson
+    private val tile64D   = Color(0xFF9F6DD6) // violet
+    private val tile128D  = Color(0xFF2E9B8B) // teal
+    private val tile256D  = Color(0xFFE8A63A) // amber
+    private val tile512D  = Color(0xFFD14EA5) // fuchsia
+    private val tile1024D = Color(0xFF5E55C8) // indigo
+    private val tile2048D = Color(0xFFF2C94C) // gold
+    private val tileSuperD = Color(0xFF40D7A8) // emerald beyond 2048
+
+    // --- Light mode ---
+    private val tile2L    = Color(0xFF3FC1EF)
+    private val tile4L    = Color(0xFFF49A48)
+    private val tile8L    = Color(0xFFED5F97)
+    private val tile16L   = Color(0xFFC25A92)
+    private val tile32L   = Color(0xFFC94959)
+    private val tile64L   = Color(0xFFAC7AE0)
+    private val tile128L  = Color(0xFF36AA98)
+    private val tile256L  = Color(0xFFF2B34A)
+    private val tile512L  = Color(0xFFDB5AB0)
+    private val tile1024L = Color(0xFF6C64D4)
+    private val tile2048L = Color(0xFFF5D35B)
+    private val tileSuperL = Color(0xFF4EE2B4)
 
     fun getBackgroundColor(value: Int, isDark: Boolean): Color =
         if (isDark) getDarkBg(value) else getLightBg(value)
@@ -135,12 +166,10 @@ object TileColors {
         else -> 0f
     }
 
-    fun getTextColor(value: Int, isDark: Boolean): Color = when {
-        isDark && value <= 4 -> Color(0xFFC8C4CE)  // brighter for readability
-        isDark -> Color(0xFFF9F6F2)
-        value <= 4 -> Color(0xFF776E65)             // classic brown
-        else -> Color(0xFFF9F6F2)
-    }
+    fun getTextColor(value: Int, isDark: Boolean): Color =
+        // All tiles now use saturated jewel backgrounds — white numerals
+        // read cleanly on every value in both themes.
+        Color(0xFFF9F6F2)
 
     private fun getLightBg(value: Int): Color = when (value) {
         2 -> tile2L;  4 -> tile4L;  8 -> tile8L
