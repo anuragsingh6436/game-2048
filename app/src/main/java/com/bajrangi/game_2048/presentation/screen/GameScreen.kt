@@ -1,12 +1,9 @@
 package com.bajrangi.game_2048.presentation.screen
 
 import android.view.HapticFeedbackConstants
-import android.view.SoundEffectConstants
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -23,11 +20,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,10 +34,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -55,24 +45,30 @@ import androidx.compose.ui.unit.sp
 import com.bajrangi.game_2048.R
 import com.bajrangi.game_2048.domain.model.Direction
 import com.bajrangi.game_2048.presentation.GameViewModel
+import com.bajrangi.game_2048.presentation.components.AppBackground
 import com.bajrangi.game_2048.presentation.components.GameBoard
 import com.bajrangi.game_2048.presentation.components.GameOverOverlay
+import com.bajrangi.game_2048.presentation.components.GlassSurface
 import com.bajrangi.game_2048.presentation.components.ScoreCard
 import com.bajrangi.game_2048.presentation.components.ScorePopup
+import com.bajrangi.game_2048.presentation.util.rememberSoundFx
+import com.bajrangi.game_2048.ui.theme.AuroraAccentDark
+import com.bajrangi.game_2048.ui.theme.AuroraAccentLight
 import com.bajrangi.game_2048.ui.theme.LocalGameColors
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
 
 @Composable
 fun GameScreen(
     viewModel: GameViewModel,
+    isSoundEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val gameState by viewModel.gameState.collectAsState()
     val gameColors = LocalGameColors.current
     val view = LocalView.current
+
+    val sfx = rememberSoundFx(isSoundEnabled)
 
     var totalDragX by remember { mutableFloatStateOf(0f) }
     var totalDragY by remember { mutableFloatStateOf(0f) }
@@ -92,17 +88,10 @@ fun GameScreen(
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(gameColors.background, gameColors.backgroundGradientEnd)
-                )
-            )
+    AppBackground(
+        isDark = gameColors.isDark,
+        modifier = modifier.fillMaxSize()
     ) {
-        AmbientBackground()
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -111,7 +100,10 @@ fun GameScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            // Reserve room for the global Settings/Help icon row that
+            // overlays the top-right corner — otherwise the BEST score
+            // card collides with the gear icon.
+            Spacer(modifier = Modifier.height(56.dp))
 
             Header(
                 score = gameState.score,
@@ -127,10 +119,6 @@ fun GameScreen(
                 onUndo = {
                     view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                     viewModel.undoMove()
-                },
-                onToggleTheme = {
-                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                    viewModel.toggleTheme(gameColors.isDark)
                 }
             )
 
@@ -171,8 +159,9 @@ fun GameScreen(
                                     val moved =
                                         viewModel.gameState.value.moveCount > prevMoveCount
                                     if (moved) {
-                                        view.playSoundEffect(SoundEffectConstants.CLICK)
-                                        if (viewModel.gameState.value.score > prevScore) {
+                                        val merged = viewModel.gameState.value.score > prevScore
+                                        if (merged) sfx.merge() else sfx.move()
+                                        if (merged) {
                                             view.performHapticFeedback(
                                                 HapticFeedbackConstants.VIRTUAL_KEY
                                             )
@@ -232,83 +221,6 @@ fun GameScreen(
     }
 }
 
-// ─── Background ─────────────────────────────────────────────────────
-
-@Composable
-private fun AmbientBackground() {
-    val gameColors = LocalGameColors.current
-    val isDark = gameColors.isDark
-    val blobAlpha = if (isDark) 0.40f else 0.50f
-    val vignetteAlpha = if (isDark) 0.35f else 0.06f
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        val short = min(w, h)
-
-        val blobRadius = short * 0.6f
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(
-                    gameColors.glowTopRight.copy(alpha = blobAlpha),
-                    gameColors.glowTopRight.copy(alpha = blobAlpha * 0.3f),
-                    Color.Transparent
-                ),
-                center = Offset(w * 0.88f, h * 0.06f),
-                radius = blobRadius
-            ),
-            radius = blobRadius,
-            center = Offset(w * 0.88f, h * 0.06f)
-        )
-
-        val blobRadius2 = short * 0.5f
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(
-                    gameColors.glowBottomLeft.copy(alpha = blobAlpha * 0.6f),
-                    gameColors.glowBottomLeft.copy(alpha = blobAlpha * 0.15f),
-                    Color.Transparent
-                ),
-                center = Offset(w * 0.08f, h * 0.88f),
-                radius = blobRadius2
-            ),
-            radius = blobRadius2,
-            center = Offset(w * 0.08f, h * 0.88f)
-        )
-
-        val focusRadius = short * 0.45f
-        val focusCenter = Offset(w * 0.5f, h * 0.42f)
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(
-                    gameColors.glowCenter.copy(alpha = blobAlpha * 0.5f),
-                    Color.Transparent
-                ),
-                center = focusCenter,
-                radius = focusRadius
-            ),
-            radius = focusRadius,
-            center = focusCenter
-        )
-
-        val vignetteRadius = max(w, h) * 0.75f
-        val vignetteCenter = Offset(w * 0.5f, h * 0.4f)
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(
-                    Color.Transparent,
-                    Color.Transparent,
-                    gameColors.vignette.copy(alpha = vignetteAlpha)
-                ),
-                center = vignetteCenter,
-                radius = vignetteRadius
-            ),
-            radius = vignetteRadius * 1.5f,
-            center = vignetteCenter
-        )
-    }
-}
-
 // ─── Header ─────────────────────────────────────────────────────────
 
 @Composable
@@ -320,8 +232,7 @@ private fun Header(
     canUndo: Boolean,
     showUndoButton: Boolean,
     onRestart: () -> Unit,
-    onUndo: () -> Unit,
-    onToggleTheme: () -> Unit
+    onUndo: () -> Unit
 ) {
     val gameColors = LocalGameColors.current
 
@@ -361,23 +272,6 @@ private fun Header(
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Theme toggle — shows what it will switch TO
-        PressableButton(
-            onClick = onToggleTheme,
-            backgroundColor = gameColors.restartButton,
-            contentPadding = PressableButtonPadding.Icon
-        ) {
-            Icon(
-                imageVector = if (gameColors.isDark)
-                    Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
-                contentDescription = stringResource(R.string.cd_theme),
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.size(8.dp))
-
         if (showUndoButton) {
             PressableButton(
                 onClick = onUndo,
@@ -388,7 +282,7 @@ private fun Header(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Undo,
                     contentDescription = stringResource(R.string.cd_undo),
-                    tint = Color.White.copy(alpha = if (canUndo) 1f else 0.5f),
+                    tint = gameColors.textPrimary.copy(alpha = if (canUndo) 1f else 0.5f),
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -402,7 +296,7 @@ private fun Header(
         ) {
             Text(
                 text = stringResource(R.string.new_game),
-                color = Color.White,
+                color = if (gameColors.isDark) AuroraAccentDark else AuroraAccentLight,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -442,31 +336,30 @@ private fun PressableButton(
         PressableButtonPadding.Icon -> Modifier.padding(10.dp)
     }
 
-    val buttonShape = RoundedCornerShape(10.dp)
+    val gameColors = LocalGameColors.current
 
-    Box(
+    GlassSurface(
+        isDark = gameColors.isDark,
+        cornerRadius = 12.dp,
+        elevation = 2.dp,
+        fillAlpha = if (enabled) 1f else 0.5f,
         modifier = Modifier
             .graphicsLayer {
                 scaleX = pressScale.value
                 scaleY = pressScale.value
             }
-            .shadow(
-                elevation = 2.dp,
-                shape = buttonShape,
-                ambientColor = backgroundColor.copy(alpha = 0.2f),
-                spotColor = backgroundColor.copy(alpha = 0.15f)
-            )
-            .clip(buttonShape)
-            .background(if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.35f))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled,
                 onClick = onClick
             )
-            .then(padding),
-        contentAlignment = Alignment.Center
     ) {
-        content()
+        Box(
+            modifier = Modifier.then(padding),
+            contentAlignment = Alignment.Center
+        ) {
+            content()
+        }
     }
 }

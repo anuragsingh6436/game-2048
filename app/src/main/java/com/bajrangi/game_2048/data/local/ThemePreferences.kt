@@ -13,8 +13,8 @@ class ThemePreferences @Inject constructor(
     private val prefs = context.getSharedPreferences("numra_theme", Context.MODE_PRIVATE)
 
     fun getThemeMode(): ThemeMode {
-        val ordinal = prefs.getInt(KEY_THEME, 0)
-        return ThemeMode.entries.getOrElse(ordinal) { ThemeMode.SYSTEM }
+        val ordinal = prefs.getInt(KEY_THEME, ThemeMode.DARK.ordinal)
+        return ThemeMode.entries.getOrElse(ordinal) { ThemeMode.DARK }
     }
 
     fun setThemeMode(mode: ThemeMode) {

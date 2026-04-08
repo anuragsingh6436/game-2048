@@ -37,14 +37,15 @@ private val TileShape = RoundedCornerShape(14.dp)
 fun TileView(
     tile: Tile,
     cellSize: Dp,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    fontScale: Float = 1f
 ) {
     val gameColors = LocalGameColors.current
     val isDark = gameColors.isDark
     val bgColor = TileColors.getBackgroundColor(tile.value, isDark)
     val gradientStart = TileColors.getGradientStart(tile.value, isDark)
     val textColor = TileColors.getTextColor(tile.value, isDark)
-    val fontSize = TileColors.getFontSize(tile.value)
+    val fontSize = TileColors.getFontSize(tile.value) * fontScale
     val hasGlow = TileColors.hasGlow(tile.value)
     val glowAlpha = TileColors.getGlowAlpha(tile.value, isDark)
 

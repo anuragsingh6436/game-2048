@@ -5,7 +5,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
@@ -21,14 +20,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.bajrangi.game_2048.domain.model.GameState
-import com.bajrangi.game_2048.domain.model.GameState.Companion.GRID_SIZE
 import com.bajrangi.game_2048.domain.model.Tile
 import com.bajrangi.game_2048.ui.theme.LocalGameColors
 import kotlinx.coroutines.launch
@@ -55,56 +52,22 @@ fun GameBoard(
         // Ambient glow behind the board
         BoardGlow(glowColor = gameColors.glowBoard)
 
-        // Glass board container
-        Box(
+        // Glass board container (Aurora)
+        GlassSurface(
+            isDark = gameColors.isDark,
+            cornerRadius = 20.dp,
+            elevation = if (gameColors.isDark) 12.dp else 8.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
-                .shadow(
-                    elevation = if (gameColors.isDark) 12.dp else 8.dp,
-                    shape = BoardShape,
-                    ambientColor = if (gameColors.isDark)
-                        Color.Black.copy(alpha = 0.3f)
-                    else
-                        gameColors.boardBackground.copy(alpha = 0.2f),
-                    spotColor = if (gameColors.isDark)
-                        Color.Black.copy(alpha = 0.25f)
-                    else
-                        gameColors.boardBackground.copy(alpha = 0.15f)
-                )
-                .clip(BoardShape)
-                .background(gameColors.boardGlass)
-                .border(
-                    width = 1.dp,
-                    color = gameColors.boardBorder,
-                    shape = BoardShape
-                )
-                .padding(BOARD_PADDING)
         ) {
-            // Frost highlight — top-edge light reflection
-            FrostHighlight(frostColor = gameColors.boardFrost)
+            Box(modifier = Modifier.padding(BOARD_PADDING)) {
+                EmptyCellsGrid(gridSize = state.size, emptyColor = gameColors.emptyCell)
 
-            EmptyCellsGrid(emptyColor = gameColors.emptyCell)
-
-            TilesOverlay(tiles = state.tiles)
+                TilesOverlay(gridSize = state.size, tiles = state.tiles)
+            }
         }
     }
-}
-
-@Composable
-private fun FrostHighlight(frostColor: Color) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(frostColor, Color.Transparent),
-                    startY = 0f,
-                    endY = 120f
-                )
-            )
-    )
 }
 
 @Composable
@@ -138,17 +101,17 @@ private fun BoardGlow(glowColor: Color) {
 }
 
 @Composable
-private fun EmptyCellsGrid(emptyColor: Color) {
+private fun EmptyCellsGrid(gridSize: Int, emptyColor: Color) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
     ) {
-        val totalSpacing = CELL_SPACING * (GRID_SIZE - 1)
-        val cellSize = (maxWidth - totalSpacing) / GRID_SIZE
+        val totalSpacing = CELL_SPACING * (gridSize - 1)
+        val cellSize = (maxWidth - totalSpacing) / gridSize
 
-        for (row in 0 until GRID_SIZE) {
-            for (col in 0 until GRID_SIZE) {
+        for (row in 0 until gridSize) {
+            for (col in 0 until gridSize) {
                 Box(
                     modifier = Modifier
                         .offset(
@@ -165,19 +128,25 @@ private fun EmptyCellsGrid(emptyColor: Color) {
 }
 
 @Composable
-private fun TilesOverlay(tiles: List<Tile>) {
+private fun TilesOverlay(gridSize: Int, tiles: List<Tile>) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
     ) {
-        val totalSpacing = CELL_SPACING * (GRID_SIZE - 1)
-        val cellSize = (maxWidth - totalSpacing) / GRID_SIZE
+        val totalSpacing = CELL_SPACING * (gridSize - 1)
+        val cellSize = (maxWidth - totalSpacing) / gridSize
         val step = cellSize + CELL_SPACING
 
+        val fontScale = 4f / gridSize.toFloat()
         tiles.forEach { tile ->
             key(tile.id) {
-                AnimatedTile(tile = tile, cellSize = cellSize, step = step)
+                AnimatedTile(
+                    tile = tile,
+                    cellSize = cellSize,
+                    step = step,
+                    fontScale = fontScale
+                )
             }
         }
     }
@@ -187,7 +156,8 @@ private fun TilesOverlay(tiles: List<Tile>) {
 private fun AnimatedTile(
     tile: Tile,
     cellSize: Dp,
-    step: Dp
+    step: Dp,
+    fontScale: Float = 1f
 ) {
     val startCol = if (tile.isNew) tile.col.toFloat() else tile.previousCol.toFloat()
     val startRow = if (tile.isNew) tile.row.toFloat() else tile.previousRow.toFloat()
@@ -218,6 +188,6 @@ private fun AnimatedTile(
             y = step * animRow.value
         )
     ) {
-        TileView(tile = tile, cellSize = cellSize)
+        TileView(tile = tile, cellSize = cellSize, fontScale = fontScale)
     }
 }

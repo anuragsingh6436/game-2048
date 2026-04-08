@@ -42,9 +42,9 @@ class GameViewModel @Inject constructor(
         loadBestScore()
     }
 
-    fun startNewGame() {
+    fun startNewGame(size: Int = _gameState.value.size) {
         loadBestScoreJob?.cancel()
-        _gameState.value = startNewGameUseCase()
+        _gameState.value = startNewGameUseCase(size)
         previousState = null
         loadBestScore()
     }
