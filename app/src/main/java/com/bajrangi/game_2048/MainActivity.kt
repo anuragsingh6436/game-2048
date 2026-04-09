@@ -10,8 +10,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -73,7 +75,11 @@ class MainActivity : ComponentActivity() {
 
                 val gameColors = LocalGameColors.current
 
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
                   Column(modifier = Modifier.fillMaxSize()) {
                     Box(modifier = Modifier.weight(1f)) {
                     AnimatedContent(
