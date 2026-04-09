@@ -18,7 +18,7 @@ object AdConfig {
     // Google's official test banner unit. Safe to use anywhere, anytime.
     private const val TEST_BANNER_ID = "ca-app-pub-3940256099942544/6300978111"
 
-    private const val REAL_BANNER_ID = "ca-app-pub-6081894851925140/6975123023"
+    private const val REAL_BANNER_ID = "ca-app-pub-6081894851925140/7777272060"
 
     fun getBannerAdUnitId(): String {
         val id = if (BuildConfig.DEBUG) TEST_BANNER_ID else REAL_BANNER_ID
