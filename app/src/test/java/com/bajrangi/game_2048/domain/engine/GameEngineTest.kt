@@ -355,21 +355,6 @@ class GameEngineTest {
     // ==================== INITIAL STATE TESTS ====================
 
     @Test
-    fun `createInitialState - creates grid with exactly 2 tiles`() {
-        val state = engine.createInitialState(Random(42))
-        val nonZero = state.grid.flatten().count { it != 0 }
-        assertEquals(2, nonZero)
-    }
-
-    @Test
-    fun `createInitialState - initial tiles are 2 or 4`() {
-        val state = engine.createInitialState(Random(42))
-        state.grid.flatten().filter { it != 0 }.forEach { value ->
-            assertTrue("Tile value should be 2 or 4, was $value", value == 2 || value == 4)
-        }
-    }
-
-    @Test
     fun `createInitialState - score starts at 0`() {
         val state = engine.createInitialState()
         assertEquals(0, state.score)

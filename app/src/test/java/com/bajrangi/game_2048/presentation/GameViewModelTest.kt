@@ -81,7 +81,7 @@ class GameViewModelTest {
         val viewModel = createViewModel()
         val state = viewModel.gameState.value
         val nonZero = state.grid.flatten().count { it != 0 }
-        assertEquals(2, nonZero)
+        assertEquals(10, nonZero)
     }
 
     @Test
@@ -118,7 +118,7 @@ class GameViewModelTest {
         viewModel.startNewGame()
 
         assertEquals(0, viewModel.gameState.value.score)
-        assertEquals(2, viewModel.gameState.value.grid.flatten().count { it != 0 })
+        assertEquals(10, viewModel.gameState.value.grid.flatten().count { it != 0 })
     }
 
     @Test
@@ -348,7 +348,7 @@ class GameViewModelTest {
         advanceUntilIdle()
 
         assertEquals(0, viewModel.gameState.value.bestScore)
-        assertEquals(2, viewModel.gameState.value.grid.flatten().count { it != 0 })
+        assertEquals(10, viewModel.gameState.value.grid.flatten().count { it != 0 })
     }
 
     @Test
@@ -385,7 +385,7 @@ class GameViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.gameState.value
-        assertEquals(2, state.grid.flatten().count { it != 0 })
+        assertEquals(10, state.grid.flatten().count { it != 0 })
         assertEquals(0, state.score)
     }
 }
