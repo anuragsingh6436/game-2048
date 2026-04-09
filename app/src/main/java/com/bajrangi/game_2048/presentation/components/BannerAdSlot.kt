@@ -16,6 +16,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.bajrangi.game_2048.config.AdConfig
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -62,8 +64,24 @@ fun BannerAdSlot(
         }
     }
 
-    DisposableEffect(adView) {
-        onDispose { adView.destroy() }
+    // Hook AdView into the host lifecycle. Without pause()/resume() the
+    // WebView surface goes black after the screen is locked or the app
+    // backgrounds, because AdMob never gets a chance to suspend its
+    // rendering pipeline cleanly.
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, adView) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> adView.pause()
+                Lifecycle.Event.ON_RESUME -> adView.resume()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            adView.destroy()
+        }
     }
 
     // Reserve the exact height the ad will occupy so layout never shifts.
