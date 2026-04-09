@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -19,7 +20,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.bajrangi.game_2048.BuildConfig
+import com.bajrangi.game_2048.config.RemoteConfigManager
 import com.bajrangi.game_2048.presentation.GameViewModel
+import com.bajrangi.game_2048.presentation.components.BannerAdSlot
+import com.bajrangi.game_2048.presentation.components.ForceUpdateDialog
 import com.bajrangi.game_2048.presentation.components.SettingsOverlay
 import com.bajrangi.game_2048.presentation.screen.GameScreen
 import com.bajrangi.game_2048.presentation.screen.HowToPlayScreen
@@ -27,17 +32,22 @@ import com.bajrangi.game_2048.presentation.screen.SplashScreen
 import com.bajrangi.game_2048.ui.theme.Game2048Theme
 import com.bajrangi.game_2048.ui.theme.LocalGameColors
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 private enum class Screen { Splash, Game, HowToPlay }
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var remoteConfigManager: RemoteConfigManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             val viewModel: GameViewModel = hiltViewModel()
             val themeMode by viewModel.themeMode.collectAsState()
+            val flags by remoteConfigManager.flags.collectAsState()
 
             Game2048Theme(themeMode = themeMode) {
                 var current by rememberSaveable { mutableStateOf(Screen.Splash) }
@@ -64,6 +74,8 @@ class MainActivity : ComponentActivity() {
                 val gameColors = LocalGameColors.current
 
                 Box(modifier = Modifier.fillMaxSize()) {
+                  Column(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.weight(1f)) {
                     AnimatedContent(
                         targetState = current,
                         transitionSpec = {
@@ -90,6 +102,16 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+                    }
+
+                    }
+                    BannerAdSlot(enabled = flags.enableBannerAds)
+                  }
+
+                    if (flags.forceUpdate &&
+                        BuildConfig.VERSION_CODE < flags.minVersionCode
+                    ) {
+                        ForceUpdateDialog()
                     }
 
                     // Global settings overlay — present on Splash and Game,
